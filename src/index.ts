@@ -3,7 +3,13 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, ModelMessage, UserContent } from "ai";
 import { redis } from "bun";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { Elysia, status, t } from "elysia";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.guess();
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -102,7 +108,8 @@ const app = new Elysia()
         const match = msg.match(/(lol|cs)\s*(\S*)\s*(\S*)/s);
         if (!match) throw status(400, "invalid lol command");
         let [, game, start, end] = match;
-        if (start.length === 0) start = dayjs().format("YYYY-MM-DD");
+        if (start.length === 0)
+          start = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD");
         if (end.length === 0) end = start;
 
         const gid: Record<string, string> = { lol: "2", cs: "7" };
@@ -130,8 +137,14 @@ const app = new Elysia()
         const { data } = (await response.json()) as { data: unknown };
         const { list: matches } = data as { list: Match[] };
         const format = (match: Match) => {
-          const start = dayjs.unix(match.stime).format("YYYY-MM-DD HH:mm:ss");
-          const end = dayjs.unix(match.etime).format("YYYY-MM-DD HH:mm:ss");
+          const start = dayjs
+            .unix(match.stime)
+            .tz("Asia/Shanghai")
+            .format("YYYY-MM-DD HH:mm:ss");
+          const end = dayjs
+            .unix(match.etime)
+            .tz("Asia/Shanghai")
+            .format("YYYY-MM-DD HH:mm:ss");
           return [
             `${match.season.title} ${match.game_stage}`,
             `${start} ~ ${end}`,
