@@ -2,6 +2,7 @@ import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, ModelMessage, UserContent } from "ai";
 import { redis } from "bun";
+import dayjs from "dayjs";
 import { Elysia, status, t } from "elysia";
 
 const openrouter = createOpenRouter({
@@ -18,12 +19,8 @@ const app = new Elysia()
       const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
-      // ping
-      if (msg === "ping") return "pong";
-      // snapshot
-      else if (msg === "snapshot") return snapshot;
       // set <key> <value>
-      else if (msg.startsWith("set")) {
+      if (msg.startsWith("set")) {
         const match = msg.match(/set\s+(\S+)\s+(.+)/s);
         if (!match) throw status(400, "invalid set command");
         const [, key, value] = match;
@@ -39,6 +36,15 @@ const app = new Elysia()
         if (!value) throw status(404, `key ${key} not found`);
         return value;
       }
+
+      // 42
+      if (msg.length >= 42) {
+        // not a command
+      }
+      // ping
+      else if (msg === "ping") return "pong";
+      // snapshot
+      else if (msg === "snapshot") return snapshot;
       // rooms | r
       else if (msg === "rooms" || msg === "r") {
         const [main, beta] = await Promise.all([
@@ -90,6 +96,49 @@ const app = new Elysia()
           .filter((m) => m.id.includes(filter))
           .map((m) => m.id)
           .join("\n");
+      }
+      // <lol | cs> [start] [end]
+      else if (msg.startsWith("lol") || msg.startsWith("cs")) {
+        const match = msg.match(/(lol|cs)\s*(\S*)\s*(\S*)/s);
+        if (!match) throw status(400, "invalid lol command");
+        let [, game, start, end] = match;
+        if (start.length === 0) start = dayjs().format("YYYY-MM-DD");
+        if (end.length === 0) end = start;
+
+        const gid: Record<string, string> = { lol: "2", cs: "7" };
+        const url = new URL("https://api.bilibili.com/x/esports/matchs/list");
+        url.searchParams.append("mid", "0");
+        url.searchParams.append("gid", gid[game]);
+        url.searchParams.append("tid", "0");
+        url.searchParams.append("pn", "1");
+        url.searchParams.append("ps", "10");
+        url.searchParams.append("contest_status", "");
+        url.searchParams.append("stime", start);
+        url.searchParams.append("etime", end);
+
+        interface Match {
+          game_stage: string;
+          stime: number;
+          etime: number;
+          home_score: number;
+          away_score: number;
+          season: { title: string };
+          home: { name: string };
+          away: { name: string };
+        }
+        const response = await fetch(url);
+        const { data } = (await response.json()) as { data: unknown };
+        const { list: matches } = data as { list: Match[] };
+        const format = (match: Match) => {
+          const start = dayjs.unix(match.stime).format("YYYY-MM-DD HH:mm:ss");
+          const end = dayjs.unix(match.etime).format("YYYY-MM-DD HH:mm:ss");
+          return [
+            `${match.season.title} ${match.game_stage}`,
+            `${start} ~ ${end}`,
+            `${match.home.name} ${match.home_score} - ${match.away_score} ${match.away.name}`,
+          ].join("\n");
+        };
+        return matches.map(format).join("\n");
       }
 
       let name = "";
