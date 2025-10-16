@@ -9,6 +9,7 @@
     "@octokit/request": "^10.0.5",
     "@openrouter/ai-sdk-provider": "^1.2.0",
     "ai": "^5.0.71",
+    "dayjs": "^1.11.18",
     "elysia": "latest"
   },
   "devDependencies": {
