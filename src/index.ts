@@ -1,6 +1,6 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { ModelMessage, streamText, UserContent } from "ai";
+import { ModelMessage, streamText, TextPart, UserContent } from "ai";
 import { redis } from "bun";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -284,6 +284,30 @@ const app = new Elysia()
         const response = await fetch(msg);
         const text = await response.text();
         content.push({ type: "text", text });
+      }
+      // links
+      else if (msg.startsWith("links")) {
+        const match = msg.match(/links\s*(.*)/s);
+        if (!match) throw status(400, "invalid links command");
+        [, msg] = match;
+        tags.push("links");
+
+        const regex = /https?:\/\/\S+/g;
+        const links: string[] = [];
+        ref?.match(regex)?.forEach((link) => links.push(link));
+        msg.match(regex)?.forEach((link) => links.push(link));
+
+        const parts = await Promise.all(
+          links.map(async (link) => {
+            const response = await fetch(link);
+            const text = await response.text();
+            return [
+              { type: "text", text: link },
+              { type: "text", text },
+            ] as TextPart[];
+          })
+        );
+        content.push(...parts.flat());
       }
 
       for (const tag of tags) {
