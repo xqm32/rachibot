@@ -255,6 +255,15 @@ const app = new Elysia()
         const text = await response.text();
         content.push({ type: "text", text });
       }
+      // github trending
+      else if (msg === "github trending") {
+        msg = "";
+        tags.push("github-trending");
+
+        const response = await fetch("https://github.com/trending");
+        const text = await response.text();
+        content.push({ type: "text", text });
+      }
       // ref
       // tldr
       else if (msg === "tldr" && ref) {
