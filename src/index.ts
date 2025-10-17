@@ -25,13 +25,29 @@ const app = new Elysia()
       const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
+      // ref
+      // set <key>
+      if (msg.startsWith("set") && ref) {
+        const match = msg.match(/set\s+(\S+)/s);
+        if (!match) throw status(400, "invalid set command");
+        const [, key] = match;
+        await redis.set(`key:${key}`, ref);
+        return `${key}: ${ref}`;
+      }
       // set <key> <value>
-      if (msg.startsWith("set")) {
+      else if (msg.startsWith("set")) {
         const match = msg.match(/set\s+(\S+)\s+(.+)/s);
         if (!match) throw status(400, "invalid set command");
         const [, key, value] = match;
         await redis.set(`key:${key}`, value);
         return `${key}: ${value}`;
+      }
+      // ref
+      // get
+      else if (msg === "get" && ref) {
+        const value = await redis.get(`key:${ref}`);
+        if (!value) throw status(404, `key ${ref} not found`);
+        return value;
       }
       // get <key>
       else if (msg.startsWith("get")) {
@@ -236,6 +252,16 @@ const app = new Elysia()
         tags.push("hacker-news");
 
         const response = await fetch("https://news.ycombinator.com");
+        const text = await response.text();
+        content.push({ type: "text", text });
+      }
+      // ref
+      // tldr
+      else if (msg === "tldr" && ref) {
+        msg = "";
+        tags.push("tldr");
+
+        const response = await fetch(ref);
         const text = await response.text();
         content.push({ type: "text", text });
       }
