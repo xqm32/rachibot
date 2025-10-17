@@ -273,6 +273,8 @@ const app = new Elysia()
     }
   )
   .post("/api/v1/chat/completions", async ({ request }) => {
+    const enabled = await redis.get("key:$/api/v1/chat/completions");
+    if (enabled === "false") throw status(403, "endpoint disabled");
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
