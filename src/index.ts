@@ -1,6 +1,6 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { generateText, ModelMessage, UserContent } from "ai";
+import { ModelMessage, streamText, UserContent } from "ai";
 import { redis } from "bun";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -260,8 +260,8 @@ const app = new Elysia()
       // system
       // user [image, ref, msg]
       if (msg.length > 0) messages.push({ role: "user", content: msg });
-      const { text } = await generateText({ model, messages });
-      return text;
+      const { textStream } = streamText({ model, messages });
+      return textStream;
     },
     {
       body: t.Object({
