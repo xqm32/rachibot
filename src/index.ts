@@ -293,12 +293,13 @@ const app = new Elysia()
         tags.push("links");
 
         const regex = /https?:\/\/\S+/g;
-        const links: string[] = [];
-        ref?.match(regex)?.forEach((link) => links.push(link));
-        msg.match(regex)?.forEach((link) => links.push(link));
+        const links: Set<string> = new Set();
+        ref?.match(regex)?.forEach((link) => links.add(link));
+        msg.match(regex)?.forEach((link) => links.add(link));
+        if (links.size === 0) throw status(400, "no links found");
 
         const parts = await Promise.all(
-          links.map(async (link) => {
+          Array.from(links).map(async (link) => {
             const response = await fetch(link);
             const text = await response.text();
             return [
