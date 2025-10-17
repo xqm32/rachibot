@@ -212,8 +212,10 @@ const app = new Elysia()
       if (msg === "tags") return tags.join(", ");
 
       // help
-      if (msg === "help") {
-        msg = "";
+      if (msg.startsWith("help")) {
+        const match = msg.match(/help\s*(.*)/s);
+        if (!match) throw status(400, "invalid help command");
+        [, msg] = match;
         tags.push("help");
 
         const { data } = (await request(
