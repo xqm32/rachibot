@@ -266,6 +266,19 @@ const app = new Elysia()
         const text = await response.text();
         content.push({ type: "text", text });
       }
+      // xkcd
+      else if (msg === "xkcd") {
+        msg = "";
+        tags.push("xkcd");
+
+        const response = await fetch("https://xkcd.com");
+        const text = await response.text();
+        const regex = /<meta property="og:image" content="([^"]*)">/;
+        const match = text.match(regex);
+        if (!match) throw status(500, "xkcd image not found");
+        const [, url] = match;
+        content.push({ type: "image", image: new URL(url) });
+      }
       // ref
       // tldr
       else if (msg === "tldr" && ref) {
