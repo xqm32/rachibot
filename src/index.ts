@@ -246,6 +246,106 @@ const app = new Elysia()
         const text = await response.text();
         content.push({ type: "text", text });
       }
+      // lol [filter] [start] [end]
+      else if (msg.startsWith("lol")) {
+        const match = msg.match(/lol\s*(\S*)\s*(\S*)\s*(\S*)/s);
+        if (!match) throw status(400, "invalid lol command");
+        let [, filter, start, end] = match;
+        filter = filter.toLowerCase();
+
+        let stime, etime;
+        if (start.length === 0) stime = dayjs().tz("Asia/Shanghai");
+        else stime = dayjs.tz(start, "Asia/Shanghai");
+        if (end.length === 0) etime = stime;
+        else etime = dayjs.tz(end, "Asia/Shanghai");
+
+        const response = await fetch(
+          "https://lpl.qq.com/web201612/data/LOL_MATCH2_GAME_LIST_BRIEF.js"
+        );
+        const text = await response.text();
+        const {
+          msg: { sGameList },
+        } = JSON.parse(text.slice("var GameList=".length, -";".length)) as {
+          msg: { sGameList: Record<string, unknown[]> };
+        };
+
+        interface Game {
+          GameId: string;
+          sDate: string;
+          eDate: string;
+        }
+        const games = Object.values(sGameList).flat() as Game[];
+        // sDate < stime < etime < eDate
+        const gaming = games.filter((game) => {
+          const sDate = dayjs.tz(game.sDate, "Asia/Shanghai");
+          const eDate = dayjs.tz(game.eDate, "Asia/Shanghai");
+          return (
+            sDate.isBefore(stime.endOf("day")) &&
+            eDate.isAfter(etime.startOf("day"))
+          );
+        });
+
+        interface Match {
+          bMatchId: string;
+          bMatchName: string;
+          MatchDate: string;
+        }
+        const fetchMatch = async (game: Game) => {
+          const response = await fetch(
+            `https://lpl.qq.com/web201612/data/LOL_MATCH2_MATCH_HOMEPAGE_BMATCH_LIST_${game.GameId}.js`
+          );
+          const { msg } = (await response.json()) as { msg: Match[] };
+          return msg;
+        };
+        const matches = (await Promise.all(gaming.map(fetchMatch))).flat();
+
+        // lol [all] [start] [end]
+        if (filter.length === 0 || filter === "all") {
+          // stime < mDate < etime
+          const matching = matches.filter((match) => {
+            const mDate = dayjs.tz(match.MatchDate, "Asia/Shanghai");
+            return (
+              mDate.isAfter(stime.startOf("day")) &&
+              mDate.isBefore(etime.endOf("day"))
+            );
+          });
+          return matching.map((match) => match.bMatchName).join("\n");
+        }
+
+        // lol <filter> [start] [end]
+        msg = "";
+        tags.push("lol");
+
+        // last match
+        const last = matches
+          .filter((match) => {
+            const mDate = dayjs.tz(match.MatchDate, "Asia/Shanghai");
+            if (!match.bMatchName.toLowerCase().includes(filter)) return false;
+            // lol <filter>
+            if (start.length === 0 && mDate.isBefore(etime)) return true;
+            // lol <filter> <start> <end>
+            return (
+              mDate.isAfter(stime.startOf("day")) &&
+              mDate.isBefore(etime.endOf("day"))
+            );
+          })
+          .at(-1);
+        if (!last) throw status(404, `match ${filter} not found`);
+
+        const authorization = await redis.get("key:$lol");
+        if (!authorization) throw status(403, "lol authorization not set");
+        const fetchDetail = async (match: Match) => {
+          const url = new URL(
+            "https://open.tjstats.com/match-auth-app/open/v1/compound/matchDetail"
+          );
+          url.searchParams.append("matchId", match.bMatchId);
+          const response = await fetch(url, { headers: { authorization } });
+          const text = await response.text();
+          return { type: "text", text } as TextPart;
+        };
+        const detail = await fetchDetail(last);
+        content.push(detail);
+      }
       // hacker news [prompt]
       else if (msg.startsWith("hacker news")) {
         const match = msg.match(/hacker news\s*(.*)/s);
