@@ -294,6 +294,7 @@ const app = new Elysia()
           const response = await fetch(
             `https://lpl.qq.com/web201612/data/LOL_MATCH2_MATCH_HOMEPAGE_BMATCH_LIST_${game.GameId}.js`
           );
+          if (!response.ok) return [];
           const { msg } = (await response.json()) as { msg: Match[] };
           return msg;
         };
