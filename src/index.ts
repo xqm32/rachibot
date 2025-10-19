@@ -333,6 +333,20 @@ const app = new Elysia()
           .at(-1);
         if (!last) throw status(404, `match ${filter} not found`);
 
+        // #news
+        if (tags.includes("news")) {
+          const response = await fetch(
+            `https://lpl.qq.com/web201612/data/LOL_MATCH_DETAIL_${last.bMatchId}.js`
+          );
+          const text = await response.text();
+          const { sExt4 } = JSON.parse(
+            text.slice("var dataObj=".length, -";".length)
+          ) as { sExt4: string | null };
+          if (!sExt4) throw status(404, "news not found");
+          const news = JSON.parse(sExt4) as { title: string }[];
+          return news.map((n) => n.title).join("\n");
+        }
+
         const authorization = await redis.get("key:$lol");
         if (!authorization) throw status(403, "lol authorization not set");
         const fetchDetail = async (match: Match) => {
