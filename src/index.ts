@@ -161,6 +161,12 @@ const app = new Elysia()
         url.searchParams.append("stime", start);
         url.searchParams.append("etime", end);
 
+        interface PlayerGradeDetail {
+          nickname: string;
+          grade_users: number;
+          avg_grade: string;
+          position: string;
+        }
         interface Match {
           game_stage: string;
           stime: number;
@@ -168,8 +174,14 @@ const app = new Elysia()
           home_score: number;
           away_score: number;
           season: { title: string };
-          home: { name: string };
-          away: { name: string };
+          home: {
+            name: string;
+            player_grade_detail: PlayerGradeDetail[] | null;
+          };
+          away: {
+            name: string;
+            player_grade_detail: PlayerGradeDetail[] | null;
+          };
         }
         const response = await fetch(url);
         const { data } = (await response.json()) as { data: unknown };
@@ -183,11 +195,30 @@ const app = new Elysia()
             .unix(match.etime)
             .tz("Asia/Shanghai")
             .format("YYYY-MM-DD HH:mm:ss");
-          return [
+          const lines = [
             `${match.season.title} ${match.game_stage}`,
             `${start} ~ ${end}`,
             `${match.home.name} ${match.home_score} - ${match.away_score} ${match.away.name}`,
-          ].join("\n");
+          ];
+
+          // #grade
+          if (tags.has("grade")) {
+            const { home, away } = match;
+            const format = (detail: PlayerGradeDetail) => {
+              const { nickname, position, avg_grade, grade_users } = detail;
+              return `${nickname} ${position} ${avg_grade} (${grade_users})`;
+            };
+            if (home.player_grade_detail)
+              home.player_grade_detail
+                .map(format)
+                .forEach((line) => lines.push(`${home.name} ${line}`));
+            if (away.player_grade_detail)
+              away.player_grade_detail
+                .map(format)
+                .forEach((line) => lines.push(`${away.name} ${line}`));
+          }
+
+          return lines.join("\n");
         };
         return matches.map(format).join("\n");
       }
