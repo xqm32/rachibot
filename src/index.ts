@@ -141,9 +141,9 @@ const app = new Elysia()
           .map((m) => m.id)
           .join("\n");
       }
-      // m<lol | cs> [start] [end]
-      else if (msg.startsWith("mlol") || msg.startsWith("mcs")) {
-        const match = msg.match(/m(lol|cs)\s*(\S*)\s*(\S*)/s);
+      // <lol | cs>m [start] [end]
+      else if (msg.startsWith("lolm") || msg.startsWith("csm")) {
+        const match = msg.match(/(lol|cs)m\s*(\S*)\s*(\S*)/s);
         if (!match) throw status(400, "invalid m command");
         let [, game, start, end] = match;
         if (start.length === 0)
