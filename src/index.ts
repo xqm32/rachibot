@@ -442,6 +442,10 @@ const app = new Elysia()
         const match = text.match(regex);
         if (!match) throw status(500, "xkcd image not found");
         const [, url] = match;
+
+        // #image
+        if (tags.has("image")) return url;
+
         content.push({ type: "image", image: new URL(url) });
       }
       // ref
