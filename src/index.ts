@@ -428,7 +428,15 @@ const app = new Elysia()
         msg = "";
         tags.add("xkcd");
 
-        const response = await fetch("https://xkcd.com");
+        let response;
+        // #random
+        if (tags.has("random")) {
+          response = await fetch("https://c.xkcd.com/random/comic");
+          tags.delete("random");
+        }
+        // xkcd
+        else response = await fetch("https://xkcd.com");
+
         const text = await response.text();
         const regex = /<meta property="og:image" content="([^"]*)">/;
         const match = text.match(regex);
