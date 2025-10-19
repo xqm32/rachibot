@@ -25,16 +25,16 @@ const app = new Elysia()
       const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
-      const tags = [];
+      const tags = new Set<string>();
       // #<tags>
       if (msg.startsWith("#")) {
         const match = msg.match(/#(\S+)\s*(.*)/s);
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
-        tags.push(...match[1].split("#"));
+        match[1].split("#").forEach((tag) => tags.add(tag));
       }
       // tags
-      if (msg === "tags") return tags.join(", ");
+      if (msg === "tags") return Array.from(tags).join(", ");
 
       // ref
       // set <key>
@@ -72,9 +72,9 @@ const app = new Elysia()
       // echo [msg]
       else if (msg.startsWith("echo")) {
         // #image
-        if (tags.includes("image") && image) return image;
+        if (tags.has("image") && image) return image;
         // #ref
-        if (tags.includes("ref") && ref) return ref;
+        if (tags.has("ref") && ref) return ref;
         const match = msg.match(/echo\s*(.*)/s);
         if (!match) throw status(400, "invalid echo command");
         [, msg] = match;
@@ -227,7 +227,7 @@ const app = new Elysia()
         const match = msg.match(/help\s*(.*)/s);
         if (!match) throw status(400, "invalid help command");
         [, msg] = match;
-        tags.push("help");
+        tags.add("help");
 
         const { data } = (await request(
           "GET /repos/{owner}/{repo}/contents/{path}",
@@ -247,7 +247,7 @@ const app = new Elysia()
       // credits
       else if (msg === "credits") {
         msg = "";
-        tags.push("credits");
+        tags.add("credits");
 
         const response = await fetch("https://openrouter.ai/api/v1/credits", {
           headers: {
@@ -326,7 +326,7 @@ const app = new Elysia()
 
         // lol <filter> [start] [end]
         msg = "";
-        tags.push("lol");
+        tags.add("lol");
 
         // last match
         const last = matches
@@ -345,7 +345,7 @@ const app = new Elysia()
         if (!last) throw status(404, `match ${filter} not found`);
 
         // #news
-        if (tags.includes("news")) {
+        if (tags.has("news")) {
           const response = await fetch(
             `https://lpl.qq.com/web201612/data/LOL_MATCH_DETAIL_${last.bMatchId}.js`
           );
@@ -377,7 +377,7 @@ const app = new Elysia()
         const match = msg.match(/hacker news\s*(.*)/s);
         if (!match) throw status(400, "invalid hacker news command");
         [, msg] = match;
-        tags.push("hacker-news");
+        tags.add("hacker-news");
 
         const response = await fetch("https://news.ycombinator.com");
         const text = await response.text();
@@ -386,7 +386,7 @@ const app = new Elysia()
       // github trending
       else if (msg === "github trending") {
         msg = "";
-        tags.push("github-trending");
+        tags.add("github-trending");
 
         const response = await fetch("https://github.com/trending");
         const text = await response.text();
@@ -395,7 +395,7 @@ const app = new Elysia()
       // xkcd
       else if (msg === "xkcd") {
         msg = "";
-        tags.push("xkcd");
+        tags.add("xkcd");
 
         const response = await fetch("https://xkcd.com");
         const text = await response.text();
@@ -409,7 +409,7 @@ const app = new Elysia()
       // tldr
       else if (msg === "tldr" && ref) {
         msg = "";
-        tags.push("tldr");
+        tags.add("tldr");
 
         const response = await fetch(ref);
         const text = await response.text();
@@ -420,7 +420,7 @@ const app = new Elysia()
         const match = msg.match(/tldr\s*(\S+)/s);
         if (!match) throw status(400, "invalid tldr command");
         [, msg] = match;
-        tags.push("tldr");
+        tags.add("tldr");
 
         const response = await fetch(msg);
         const text = await response.text();
@@ -431,7 +431,7 @@ const app = new Elysia()
         const match = msg.match(/links\s*(.*)/s);
         if (!match) throw status(400, "invalid links command");
         [, msg] = match;
-        tags.push("links");
+        tags.add("links");
 
         const regex = /https?:\/\/\S+/g;
         const links: Set<string> = new Set();
