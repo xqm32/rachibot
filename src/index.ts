@@ -25,6 +25,17 @@ const app = new Elysia()
       const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
+      const tags = [];
+      // #<tags>
+      if (msg.startsWith("#")) {
+        const match = msg.match(/#(\S+)\s*(.*)/s);
+        if (!match) throw status(400, "invalid # command");
+        [, , msg] = match;
+        tags.push(...match[1].split("#"));
+      }
+      // tags
+      if (msg === "tags") return tags.join(", ");
+
       // ref
       // set <key>
       if (msg.startsWith("set") && ref) {
@@ -199,17 +210,6 @@ const app = new Elysia()
       }
       if (ref) content.push({ type: "text", text: ref });
       const messages: ModelMessage[] = [{ role: "user", content }];
-
-      const tags = [];
-      // #<tags>
-      if (msg.startsWith("#")) {
-        const match = msg.match(/#(\S+)\s*(.*)/s);
-        if (!match) throw status(400, "invalid # command");
-        [, , msg] = match;
-        tags.push(...match[1].split("#"));
-      }
-      // tags
-      if (msg === "tags") return tags.join(", ");
 
       // help
       if (msg.startsWith("help")) {
