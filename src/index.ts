@@ -141,10 +141,10 @@ const app = new Elysia()
           .map((m) => m.id)
           .join("\n");
       }
-      // match <lol | cs> [start] [end]
-      else if (msg.startsWith("match")) {
-        const match = msg.match(/match (lol|cs)\s*(\S*)\s*(\S*)/s);
-        if (!match) throw status(400, "invalid match command");
+      // m<lol | cs> [start] [end]
+      else if (msg.startsWith("mlol") || msg.startsWith("mcs")) {
+        const match = msg.match(/m(lol|cs)\s*(\S*)\s*(\S*)/s);
+        if (!match) throw status(400, "invalid m command");
         let [, game, start, end] = match;
         if (start.length === 0)
           start = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD");
