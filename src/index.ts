@@ -69,6 +69,17 @@ const app = new Elysia()
         if (!value) throw status(404, `key ${key} not found`);
         return value;
       }
+      // echo [msg]
+      else if (msg.startsWith("echo")) {
+        // #image
+        if (tags.includes("image") && image) return image;
+        // #ref
+        if (tags.includes("ref") && ref) return ref;
+        const match = msg.match(/echo\s*(.*)/s);
+        if (!match) throw status(400, "invalid echo command");
+        [, msg] = match;
+        return msg;
+      }
 
       // 42
       if (msg.length >= 42) {
