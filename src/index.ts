@@ -319,8 +319,8 @@ const app = new Elysia()
         const games = Object.values(sGameList).flat() as Game[];
         // sDate < stime < etime < eDate
         const gaming = games.filter((game) => {
-          const sDate = dayjs.tz(game.sDate, "Asia/Shanghai");
-          const eDate = dayjs.tz(game.eDate, "Asia/Shanghai");
+          const sDate = dayjs.tz(game.sDate, "Asia/Shanghai").startOf("day");
+          const eDate = dayjs.tz(game.eDate, "Asia/Shanghai").endOf("day");
           return (
             sDate.isBefore(stime.endOf("day")) &&
             eDate.isAfter(etime.startOf("day"))
