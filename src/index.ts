@@ -26,6 +26,15 @@ const app = new Elysia()
       const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
+      let name = "";
+      // /[name]
+      if (msg.startsWith("/")) {
+        const match = msg.match(/\/(\S*)\s*(.*)/s);
+        if (!match) throw status(400, "invalid / command");
+        [, name, msg] = match;
+      }
+      const chain: string[] = [name];
+
       const tags = new Set<string>();
       // #<tags>
       if (msg.startsWith("#")) {
@@ -242,14 +251,6 @@ const app = new Elysia()
         return matches.map(format).join("\n");
       }
 
-      let name = "";
-      // /[name]
-      if (msg.startsWith("/")) {
-        const match = msg.match(/\/(\S*)\s*(.*)/s);
-        if (!match) throw status(400, "invalid / command");
-        [, name, msg] = match;
-      }
-      const chain: string[] = [name];
       // /[name] -> ... -> /[provider/model]
       while (!chain.at(-1)?.includes("/") && chain.length < 42) {
         const value = await redis.get(`key:/${name}`);
