@@ -313,6 +313,7 @@ const app = new Elysia()
 
         interface Game {
           GameId: string;
+          GameName: string;
           sDate: string;
           eDate: string;
         }
@@ -326,6 +327,12 @@ const app = new Elysia()
             eDate.isAfter(etime.startOf("day"))
           );
         });
+
+        // #gaming
+        if (tags.has("gaming"))
+          return gaming
+            .map((g) => `${g.GameName} ${g.sDate} ~ ${g.eDate}`)
+            .join("\n");
 
         interface Match {
           bMatchId: string;
