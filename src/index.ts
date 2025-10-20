@@ -95,6 +95,10 @@ const app = new Elysia()
           fetch("https://gi.xqm32.org/api/rooms").then((r) => r.json()),
           fetch("https://beta.gi.xqm32.org/api/rooms").then((r) => r.json()),
         ]);
+
+        // #raw
+        if (tags.has("raw")) return { main, beta };
+
         const format = (room: { id: number; players: { name: string }[] }) => {
           const { id, players } = room;
           const sides = players.map((player) => player.name).join(" 🆚 ");
