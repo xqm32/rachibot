@@ -337,6 +337,12 @@ const app = new Elysia()
         interface Match {
           bMatchId: string;
           bMatchName: string;
+          GameName: string;
+          GameModeName: string;
+          GameTypeName: string;
+          GameProcName: string;
+          ScoreA: string;
+          ScoreB: string;
           MatchDate: string;
         }
         const fetchMatch = async (game: Game) => {
@@ -359,7 +365,16 @@ const app = new Elysia()
               mDate.isBefore(etime.endOf("day"))
             );
           });
-          return matching.map((match) => match.bMatchName).join("\n");
+          return matching
+            .map((m) => {
+              const [a, b] = m.bMatchName.split(" vs ");
+              return [
+                `${m.GameName} ${m.GameTypeName} ${m.GameProcName} (${m.GameModeName})`,
+                m.MatchDate,
+                `${a} ${m.ScoreA} - ${m.ScoreB} ${b}`,
+              ].join("\n");
+            })
+            .join("\n");
         }
 
         // lol <filter> [start] [end]
