@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { Elysia, status, t } from "elysia";
+import net from "net";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -126,6 +127,20 @@ const app = new Elysia()
         });
         const [pull] = data;
         return `${pull.title}\n${pull.html_url}`;
+      }
+      // ip <address>
+      else if (msg.startsWith("ip")) {
+        const match = msg.match(/ip\s*(\S*)/s);
+        if (!match) throw status(400, "invalid ip command");
+        const [, host] = match;
+        if (!net.isIP(host)) throw status(400, "invalid ip address");
+        const url = new URL("https://ip.zxinc.org/api.php");
+        url.searchParams.append("type", "json");
+        url.searchParams.append("ip", host);
+        const response = await fetch(url);
+        const { data } = (await response.json()) as { data: unknown };
+        const { location } = data as { location: string };
+        return location;
       }
       // list models [filter]
       else if (msg.startsWith("list models")) {
