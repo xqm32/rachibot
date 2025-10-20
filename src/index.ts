@@ -420,10 +420,14 @@ const app = new Elysia()
           url.searchParams.append("matchId", match.bMatchId);
           const response = await fetch(url, { headers: { authorization } });
           const text = await response.text();
-          return { type: "text", text } as TextPart;
+          return text;
         };
         const detail = await fetchDetail(last);
-        content.push(detail);
+
+        // #detail
+        if (tags.has("detail")) return detail;
+
+        content.push({ type: "text", text: detail });
       }
       // hacker news [prompt]
       else if (msg.startsWith("hacker news")) {
