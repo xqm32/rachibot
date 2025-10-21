@@ -484,6 +484,18 @@ const app = new Elysia()
         content.push({ type: "image", image: new URL(url) });
       }
       // ref
+      // ask
+      else if (msg === "ask" && ref) {
+        msg = "";
+        tags.add("ask");
+
+        const response = await fetch(
+          "http://www.catb.org/~esr/faqs/smart-questions.html"
+        );
+        const text = await response.text();
+        content.push({ type: "text", text });
+      }
+      // ref
       // tldr
       else if (msg === "tldr" && ref) {
         msg = "";
