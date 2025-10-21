@@ -521,10 +521,15 @@ const app = new Elysia()
         msg = "";
         tags.add("ask");
 
-        const response = await fetch(
-          "http://www.catb.org/~esr/faqs/smart-questions.html"
-        );
-        const text = await response.text();
+        let text = await redis.get(`key:$smart-questions`);
+        if (!text) {
+          const response = await fetch(
+            "http://www.catb.org/~esr/faqs/smart-questions.html"
+          );
+          text = await response.text();
+          await redis.set(`key:$smart-questions`, text);
+          await redis.expire(`key:$smart-questions`, 86400);
+        }
         content.push({ type: "text", text });
       }
       // ref
