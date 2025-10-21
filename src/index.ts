@@ -459,8 +459,11 @@ const app = new Elysia()
         content.push({ type: "text", text });
       }
       // xkcd
-      else if (msg === "xkcd") {
-        msg = "";
+      else if (msg.startsWith("xkcd")) {
+        const match = msg.match(/xkcd\s*(\S*)\s*(.*)/s);
+        if (!match) throw status(400, "invalid xkcd command");
+        [, , msg] = match;
+        const comic = match[1];
         tags.add("xkcd");
 
         let response;
@@ -469,14 +472,17 @@ const app = new Elysia()
           response = await fetch("https://c.xkcd.com/random/comic");
           tags.delete("random");
         }
+        // xkcd [comic]
+        else if (comic.length > 0)
+          response = await fetch(`https://xkcd.com/${comic}`);
         // xkcd
         else response = await fetch("https://xkcd.com");
 
         const text = await response.text();
         const regex = /<meta property="og:image" content="([^"]*)">/;
-        const match = text.match(regex);
-        if (!match) throw status(500, "xkcd image not found");
-        const [, url] = match;
+        const meta = text.match(regex);
+        if (!meta) throw status(500, "xkcd image not found");
+        const [, url] = meta;
 
         // #image
         if (tags.has("image")) return url;
