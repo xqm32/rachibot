@@ -251,20 +251,6 @@ const app = new Elysia()
         return matches.map(format).join("\n");
       }
 
-      // /[name] -> ... -> /[provider/model]
-      while (!chain.at(-1)?.includes("/") && chain.length < 42) {
-        const value = await redis.get(`key:/${name}`);
-        if (!value) {
-          const keys = chain.map((v) => `/${v}`).join(" -> ");
-          throw status(404, `key chain ${keys} not found`);
-        }
-        name = value;
-        chain.push(name);
-      }
-      // chain
-      if (msg === "chain") return chain.map((v) => `/${v}`).join(" -> ");
-
-      const model = openrouter(chain.at(-1)!);
       const content: UserContent = [];
       if (image) {
         const url = URL.parse(image);
@@ -541,6 +527,24 @@ const app = new Elysia()
         content.push(...parts.flat());
       }
 
+      // /[name] -> ... -> /[provider/model]
+      if (chain.length === 0) throw status(400, "no model specified");
+      name = chain.at(-1)!;
+      while (!name.includes("/")) {
+        if (chain.length > 42) throw status(400, "too deep key chain");
+        const value = await redis.get(`key:/${name}`);
+        if (!value) {
+          const keys = chain.map((v) => `/${v}`).join(" -> ");
+          throw status(404, `key chain ${keys} not found`);
+        }
+        name = value;
+        chain.push(name);
+      }
+      // name
+      if (tags.has("name")) return name;
+      // chain
+      if (tags.has("chain")) return chain.map((v) => `/${v}`).join(" -> ");
+
       for (const tag of tags) {
         const value = await redis.get(`key:#${tag}`);
         if (!value) throw status(404, `key #${tag} not found`);
@@ -550,6 +554,7 @@ const app = new Elysia()
       // system
       // user [image, ref, msg]
       if (msg.length > 0) messages.push({ role: "user", content: msg });
+      const model = openrouter(name);
       const { textStream } = streamText({ model, messages });
       return textStream;
     },
