@@ -266,6 +266,9 @@ const app = new Elysia()
         [, msg] = match;
         tags.add("help");
 
+        // / -> /help
+        if (name.length === 0) chain.push("help");
+
         const { data } = (await request(
           "GET /repos/{owner}/{repo}/contents/{path}",
           {
