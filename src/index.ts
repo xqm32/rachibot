@@ -386,10 +386,18 @@ const app = new Elysia()
           const { msg } = (await response.json()) as { msg: Match[] };
           return msg;
         };
+        const formatMatch = (m: Match) => {
+          const [a, b] = m.bMatchName.split(" vs ");
+          return [
+            `${m.GameName} ${m.GameTypeName} ${m.GameProcName} (${m.GameModeName})`,
+            m.MatchDate,
+            `${a} ${m.ScoreA} - ${m.ScoreB} ${b}`,
+          ].join("\n");
+        };
         const matches = (await Promise.all(gaming.map(fetchMatch))).flat();
 
-        // lol [all] [start] [end]
-        if (filter.length === 0 || filter === "all") {
+        // lol <all> [start] [end]
+        if (filter === "all") {
           // stime < mDate < etime
           const matching = matches.filter((match) => {
             const mDate = dayjs.tz(match.MatchDate, "Asia/Shanghai");
@@ -398,19 +406,10 @@ const app = new Elysia()
               mDate.isBefore(etime.endOf("day"))
             );
           });
-          return matching
-            .map((m) => {
-              const [a, b] = m.bMatchName.split(" vs ");
-              return [
-                `${m.GameName} ${m.GameTypeName} ${m.GameProcName} (${m.GameModeName})`,
-                m.MatchDate,
-                `${a} ${m.ScoreA} - ${m.ScoreB} ${b}`,
-              ].join("\n");
-            })
-            .join("\n");
+          return matching.map(formatMatch).join("\n");
         }
 
-        // lol <filter> [start] [end]
+        // lol [filter] [start] [end]
         msg = "";
         tags.add("lol");
 
@@ -429,6 +428,9 @@ const app = new Elysia()
           })
           .at(-1);
         if (!last) throw status(404, `match ${filter} not found`);
+
+        // #last
+        if (tags.has("last")) return formatMatch(last);
 
         // #news
         if (tags.has("news")) {
