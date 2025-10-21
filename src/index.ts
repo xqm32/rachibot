@@ -164,6 +164,10 @@ const app = new Elysia()
         const { data: models } = (await response.json()) as {
           data: { id: string }[];
         };
+
+        // #raw
+        if (tags.has("raw")) return models;
+
         return models
           .filter((m) => m.id.includes(filter))
           .map((m) => m.id)
