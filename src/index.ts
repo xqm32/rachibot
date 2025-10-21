@@ -161,16 +161,36 @@ const app = new Elysia()
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           },
         });
+
+        interface Model {
+          id: string;
+          pricing: {
+            prompt: string;
+            completion: string;
+          };
+        }
         const { data: models } = (await response.json()) as {
-          data: { id: string }[];
+          data: Model[];
         };
 
         // #raw
         if (tags.has("raw")) return models;
 
+        const format = (price: string) =>
+          (parseFloat(price) * 1_000_000).toPrecision(3);
         return models
           .filter((m) => m.id.includes(filter))
-          .map((m) => m.id)
+          .map((m) => {
+            const { pricing } = m;
+            const { prompt, completion } = pricing;
+            if (tags.has("price"))
+              return [
+                m.id,
+                `🤔 $${format(prompt)}/M`,
+                `🤖 $${format(completion)}/M`,
+              ].join("\n");
+            return m.id;
+          })
           .join("\n");
       }
       // <lol | cs>m [start] [end]
