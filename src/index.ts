@@ -553,19 +553,16 @@ const app = new Elysia()
         const text = await response.text();
         content.push({ type: "text", text });
       }
-      // links
-      else if (msg.startsWith("links")) {
-        const match = msg.match(/links\s*(.*)/s);
-        if (!match) throw status(400, "invalid links command");
-        [, msg] = match;
+
+      const regex = /https?:\/\/\S+/g;
+      const links: Set<string> = new Set();
+      ref?.match(regex)?.forEach((link) => links.add(link));
+      msg.match(regex)?.forEach((link) => links.add(link));
+      if (links.size > 0) {
+        // #links
+        if (tags.has("links")) return Array.from(links).join("\n");
+
         tags.add("links");
-
-        const regex = /https?:\/\/\S+/g;
-        const links: Set<string> = new Set();
-        ref?.match(regex)?.forEach((link) => links.add(link));
-        msg.match(regex)?.forEach((link) => links.add(link));
-        if (links.size === 0) throw status(400, "no links found");
-
         const parts = await Promise.all(
           Array.from(links).map(async (link) => {
             const response = await fetch(link);
