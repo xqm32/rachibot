@@ -274,6 +274,14 @@ const app = new Elysia()
         };
         return matches.map(format).join("\n");
       }
+      // usage
+      else if (msg === "usage") {
+        const value = await redis.get(`usage:${qq}:last`);
+        if (!value) throw status(404, "usage not found");
+        return Object.entries(JSON.parse(value))
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("\n");
+      }
 
       const content: UserContent = [];
       if (image) {
@@ -604,7 +612,17 @@ const app = new Elysia()
       // user [image, ref, msg]
       if (msg.length > 0) messages.push({ role: "user", content: msg });
       const model = openrouter(name);
-      const { textStream } = streamText({ model, messages });
+      const { textStream } = streamText({
+        model,
+        messages,
+        onFinish: async ({ usage, response }) => {
+          const { modelId } = response;
+          await redis.set(
+            `usage:${qq}:last`,
+            JSON.stringify({ modelId, ...usage })
+          );
+        },
+      });
       return textStream;
     },
     {
