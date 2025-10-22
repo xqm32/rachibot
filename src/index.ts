@@ -419,7 +419,7 @@ const app = new Elysia()
             const mDate = dayjs.tz(match.MatchDate, "Asia/Shanghai");
             if (!match.bMatchName.toLowerCase().includes(filter)) return false;
             // lol <filter>
-            if (start.length === 0 && mDate.isBefore(etime)) return true;
+            if (start.length === 0) return mDate.isBefore(etime);
             // lol <filter> <start> <end>
             return (
               mDate.isAfter(stime.startOf("day")) &&
