@@ -632,11 +632,12 @@ const app = new Elysia()
 
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
-      if (featureContext === "true") {
+      if (featureContext === "true" || tags.has("context")) {
         const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
         context = items
           .map((item) => JSON.parse(item) as ModelMessage[])
           .flat();
+        tags.delete("context");
       }
       // context
       if (msg === "context") {
