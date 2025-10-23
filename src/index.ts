@@ -652,7 +652,7 @@ const app = new Elysia()
             )
           );
           await redis.ltrim(`context:${qq}:${group}`, -7, -1);
-          await redis.expire(`context:${qq}:${group}`, 86400);
+          await redis.expire(`context:${qq}:${group}`, 3600);
         },
       });
       return textStream;
