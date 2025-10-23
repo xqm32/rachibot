@@ -36,15 +36,27 @@ const app = new Elysia()
       const chain: string[] = [name];
 
       const tags = new Set<string>();
+      const labels = new Map<string, string | null>();
       // #<tags>
       if (msg.startsWith("#")) {
         const match = msg.match(/#(\S+)\s*(.*)/s);
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
-        match[1].split("#").forEach((tag) => tags.add(tag));
+        match[1].split("#").forEach((tag) => {
+          tags.add(tag);
+          if (tag.includes(":")) {
+            const [key, value] = tag.split(":", 2);
+            labels.set(key, value);
+          } else labels.set(tag, null);
+        });
       }
       // tags
       if (msg === "tags") return Array.from(tags).join(", ");
+      // labels
+      if (msg === "labels")
+        return Array.from(labels.entries())
+          .map(([k, v]) => (v ? `${k}: ${v}` : k))
+          .join("\n");
 
       // ref
       // set <key>
