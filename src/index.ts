@@ -633,7 +633,11 @@ const app = new Elysia()
           );
           await redis.rpush(
             `context:${qq}`,
-            JSON.stringify(messages.concat(response.messages))
+            JSON.stringify(
+              messages
+                .concat(response.messages)
+                .filter((m) => m.role !== "system")
+            )
           );
           await redis.ltrim(`context:${qq}`, -7, -1);
           await redis.expire(`context:${qq}`, 86400);
