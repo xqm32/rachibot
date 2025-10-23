@@ -607,7 +607,19 @@ const app = new Elysia()
         .map((item) => JSON.parse(item) as ModelMessage[])
         .flat();
       // context
-      if (msg === "context") return context;
+      if (msg === "context") {
+        // #raw
+        if (tags.has("raw")) return context;
+
+        return context
+          .flatMap((m) => {
+            if (typeof m.content === "string") return m.content;
+            return m.content
+              .filter((part) => part.type === "text")
+              .map((part) => part.text);
+          })
+          .join("\n\n---\n\n");
+      }
       // clear
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
 
