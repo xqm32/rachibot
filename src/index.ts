@@ -632,7 +632,7 @@ const app = new Elysia()
 
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
-      if (!(featureContext === "false")) {
+      if (featureContext === "true") {
         const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
         context = items
           .map((item) => JSON.parse(item) as ModelMessage[])
