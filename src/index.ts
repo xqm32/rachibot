@@ -611,18 +611,33 @@ const app = new Elysia()
         // #raw
         if (tags.has("raw")) return context;
 
-        return (
-          context
-            .flatMap((m) => {
-              if (typeof m.content === "string") return m.content;
-              return m.content
-                .filter((part) => part.type === "text")
-                .map((part) => part.text);
-            })
+        return context
+          .flatMap((m) => {
+            if (typeof m.content === "string")
+              return { role: m.role, content: m.content };
+            return m.content
+              .filter((part) => part.type === "text")
+              .map((part) => ({ role: m.role, content: part.text }));
+          })
+          .map((m) => {
+            const role = {
+              system: "⚙️",
+              user: "🤔",
+              assistant: "🤖",
+              tool: "🔧",
+            }[m.role];
+
             // fine-structure constant
-            .map((text) => text.trim().slice(0, 137))
-            .join("\n\n---\n\n")
-        );
+            const content = m.content
+              .trim()
+              .slice(0, 137)
+              .split("\n")
+              .at(0)
+              ?.trim();
+
+            return `${role} ${content}`;
+          })
+          .join("\n");
       }
       // clear
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
