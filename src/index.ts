@@ -602,14 +602,14 @@ const app = new Elysia()
       // chain
       if (tags.has("chain")) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const items = await redis.lrange(`context:${qq}`, -7, -1);
+      const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
       const context = items
         .map((item) => JSON.parse(item) as ModelMessage[])
         .flat();
       // context
       if (msg === "context") return context;
       // clear
-      if (msg === "clear") return await redis.del(`context:${qq}`);
+      if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
 
       for (const tag of tags) {
         const value = await redis.get(`key:#${tag}`);
@@ -632,15 +632,15 @@ const app = new Elysia()
             JSON.stringify({ modelId, ...usage })
           );
           await redis.rpush(
-            `context:${qq}`,
+            `context:${qq}:${group}`,
             JSON.stringify(
               messages
                 .concat(response.messages)
                 .filter((m) => m.role !== "system")
             )
           );
-          await redis.ltrim(`context:${qq}`, -7, -1);
-          await redis.expire(`context:${qq}`, 86400);
+          await redis.ltrim(`context:${qq}:${group}`, -7, -1);
+          await redis.expire(`context:${qq}:${group}`, 86400);
         },
       });
       return textStream;
