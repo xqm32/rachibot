@@ -611,14 +611,18 @@ const app = new Elysia()
         // #raw
         if (tags.has("raw")) return context;
 
-        return context
-          .flatMap((m) => {
-            if (typeof m.content === "string") return m.content;
-            return m.content
-              .filter((part) => part.type === "text")
-              .map((part) => part.text);
-          })
-          .join("\n\n---\n\n");
+        return (
+          context
+            .flatMap((m) => {
+              if (typeof m.content === "string") return m.content;
+              return m.content
+                .filter((part) => part.type === "text")
+                .map((part) => part.text);
+            })
+            // fine-structure constant
+            .map((text) => text.trim().slice(0, 137))
+            .join("\n\n---\n\n")
+        );
       }
       // clear
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
