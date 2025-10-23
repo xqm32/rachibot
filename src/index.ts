@@ -602,6 +602,15 @@ const app = new Elysia()
       // chain
       if (tags.has("chain")) return chain.map((v) => `/${v}`).join(" -> ");
 
+      const items = await redis.lrange(`context:${qq}`, -7, -1);
+      const context = items
+        .map((item) => JSON.parse(item) as ModelMessage[])
+        .flat();
+      // context
+      if (msg === "context") return context;
+      // clear
+      if (msg === "clear") return await redis.del(`context:${qq}`);
+
       for (const tag of tags) {
         const value = await redis.get(`key:#${tag}`);
         if (!value) throw status(404, `key #${tag} not found`);
@@ -614,13 +623,19 @@ const app = new Elysia()
       const model = openrouter(name);
       const { textStream } = streamText({
         model,
-        messages,
+        messages: context.concat(messages),
         onFinish: async ({ usage, response }) => {
           const { modelId } = response;
           await redis.set(
             `usage:${qq}:last`,
             JSON.stringify({ modelId, ...usage })
           );
+          await redis.rpush(
+            `context:${qq}`,
+            JSON.stringify(messages.concat(response.messages))
+          );
+          await redis.ltrim(`context:${qq}`, -7, -1);
+          await redis.expire(`context:${qq}`, 86400);
         },
       });
       return textStream;
