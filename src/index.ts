@@ -276,7 +276,7 @@ const app = new Elysia()
       }
       // usage
       else if (msg === "usage") {
-        const value = await redis.get(`usage:${qq}:last`);
+        const value = await redis.get(`usage:${qq}:${group}:last`);
         if (!value) throw status(404, "usage not found");
         return Object.entries(JSON.parse(value))
           .map(([k, v]) => `${k}: ${v}`)
@@ -659,7 +659,7 @@ const app = new Elysia()
         onFinish: async ({ usage, response }) => {
           const { modelId } = response;
           await redis.set(
-            `usage:${qq}:last`,
+            `usage:${qq}:${group}:last`,
             JSON.stringify({ modelId, ...usage })
           );
           await redis.rpush(
