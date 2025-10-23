@@ -21,9 +21,9 @@ const app = new Elysia()
   .post(
     "/",
     async ({ body }) => {
-      let { qq, msg, ref, image } = body;
+      let { qq, group, msg, ref, image } = body;
 
-      const snapshot = { qq, msg, ref, image: image?.slice(0, 42) };
+      const snapshot = { qq, group, msg, ref, image: image?.slice(0, 42) };
       console.log(JSON.stringify(snapshot));
 
       let name = "";
@@ -648,6 +648,7 @@ const app = new Elysia()
     {
       body: t.Object({
         qq: t.Optional(t.String()),
+        group: t.Optional(t.String()),
         msg: t.String(),
         ref: t.Optional(t.String()),
         image: t.Optional(t.String()),
