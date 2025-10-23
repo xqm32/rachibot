@@ -99,6 +99,34 @@ const app = new Elysia()
       else if (msg === "ping") return "pong";
       // snapshot
       else if (msg === "snapshot") return snapshot;
+      // enable
+      else if (msg.startsWith("enable")) {
+        const match = msg.match(/enable\s+(\S+)/s);
+        if (!match) throw status(400, "invalid enable command");
+        const [, key] = match;
+        return await redis.hset(`feature:${qq}`, key, "true");
+      }
+      // disable
+      else if (msg.startsWith("disable")) {
+        const match = msg.match(/disable\s+(\S+)/s);
+        if (!match) throw status(400, "invalid disable command");
+        const [, key] = match;
+        return await redis.hset(`feature:${qq}`, key, "false");
+      }
+      // features
+      else if (msg === "features") {
+        // #reset
+        if (tags.has("reset")) return await redis.del(`feature:${qq}`);
+
+        const features = await redis.hgetall(`feature:${qq}`);
+
+        // #raw
+        if (tags.has("raw")) return features;
+
+        return Object.entries(features)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("\n");
+      }
       // rooms | r
       else if (msg === "rooms" || msg === "r") {
         const [main, beta] = await Promise.all([
