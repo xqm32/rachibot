@@ -630,10 +630,14 @@ const app = new Elysia()
       // chain
       if (tags.has("chain")) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
-      const context = items
-        .map((item) => JSON.parse(item) as ModelMessage[])
-        .flat();
+      let context: ModelMessage[] = [];
+      const featureContext = await redis.hget(`feature:${qq}`, "context");
+      if (!(featureContext === "false")) {
+        const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
+        context = items
+          .map((item) => JSON.parse(item) as ModelMessage[])
+          .flat();
+      }
       // context
       if (msg === "context") {
         // #raw
