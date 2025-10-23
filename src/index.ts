@@ -102,6 +102,13 @@ const app = new Elysia()
         [, msg] = match;
         return msg;
       }
+      // > [msg]
+      else if (msg.startsWith(">")) {
+        const match = msg.match(/>\s*(.*)/s);
+        if (!match) throw status(400, "invalid > command");
+        [, msg] = match;
+        tags.add("context");
+      }
 
       // 42
       if (msg.length >= 42) {
