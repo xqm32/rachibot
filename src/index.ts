@@ -289,7 +289,7 @@ const app = new Elysia()
         if (url) content.push({ type: "image", image: url });
       }
       if (ref) content.push({ type: "text", text: ref });
-      const messages: ModelMessage[] = [{ role: "user", content }];
+      const messages: ModelMessage[] = [];
 
       // help
       if (msg.startsWith("help")) {
@@ -619,6 +619,7 @@ const app = new Elysia()
 
       // system
       // user [image, ref, msg]
+      if (content.length > 0) messages.push({ role: "user", content });
       if (msg.length > 0) messages.push({ role: "user", content: msg });
       const model = openrouter(name);
       const { textStream } = streamText({
