@@ -1,6 +1,6 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { ModelMessage, streamText, TextPart, UserContent } from "ai";
+import { generateText, ModelMessage, TextPart, UserContent } from "ai";
 import { redis } from "bun";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -688,28 +688,24 @@ const app = new Elysia()
       if (content.length > 0) messages.push({ role: "user", content });
       if (msg.length > 0) messages.push({ role: "user", content: msg });
       const model = openrouter(name);
-      const { textStream } = streamText({
+      const { text, usage, response } = await generateText({
         model,
         messages: context.concat(messages),
-        onFinish: async ({ usage, response }) => {
-          const { modelId } = response;
-          await redis.set(
-            `usage:${qq}:${group}:last`,
-            JSON.stringify({ modelId, ...usage })
-          );
-          await redis.rpush(
-            `context:${qq}:${group}`,
-            JSON.stringify(
-              messages
-                .concat(response.messages)
-                .filter((m) => m.role !== "system")
-            )
-          );
-          await redis.ltrim(`context:${qq}:${group}`, -7, -1);
-          await redis.expire(`context:${qq}:${group}`, 3600);
-        },
       });
-      return textStream;
+      const { modelId } = response;
+      await redis.set(
+        `usage:${qq}:${group}:last`,
+        JSON.stringify({ modelId, ...usage })
+      );
+      await redis.rpush(
+        `context:${qq}:${group}`,
+        JSON.stringify(
+          messages.concat(response.messages).filter((m) => m.role !== "system")
+        )
+      );
+      await redis.ltrim(`context:${qq}:${group}`, -7, -1);
+      await redis.expire(`context:${qq}:${group}`, 3600);
+      return text;
     },
     {
       body: t.Object({
