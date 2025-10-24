@@ -2,6 +2,7 @@ import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, ModelMessage, TextPart, UserContent } from "ai";
 import { redis } from "bun";
+import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -614,7 +615,14 @@ const app = new Elysia()
         const parts = await Promise.all(
           Array.from(links).map(async (link) => {
             const response = await fetch(link);
-            const text = await response.text();
+            let text = await response.text();
+
+            const featureCheerio = await redis.hget(`feature:${qq}`, "cheerio");
+            if (featureCheerio === "true" || tags.has("cheerio")) {
+              text = load(text).text();
+              tags.delete("cheerio");
+            }
+
             return [
               { type: "text", text: link },
               { type: "text", text },
