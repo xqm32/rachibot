@@ -599,27 +599,6 @@ const app = new Elysia()
         }
         content.push({ type: "text", text });
       }
-      // ref
-      // tldr
-      else if (msg === "tldr" && ref) {
-        msg = "";
-        tags.add("tldr");
-
-        const response = await fetch(ref);
-        const text = await response.text();
-        content.push({ type: "text", text });
-      }
-      // tldr [url]
-      else if (msg.startsWith("tldr")) {
-        const match = msg.match(/tldr\s*(\S+)/s);
-        if (!match) throw status(400, "invalid tldr command");
-        [, msg] = match;
-        tags.add("tldr");
-
-        const response = await fetch(msg);
-        const text = await response.text();
-        content.push({ type: "text", text });
-      }
 
       const regex = /https?:\/\/\S+/g;
       const links: Set<string> = new Set();
