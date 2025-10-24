@@ -29,7 +29,7 @@ const app = new Elysia()
       let name = "";
       // /[name]
       if (msg.startsWith("/")) {
-        const match = msg.match(/\/([^\s#>]+)\s*(.*)/s);
+        const match = msg.match(/\/([^\s#<>]+)\s*(.*)/s);
         if (!match) throw status(400, "invalid / command");
         [, name, msg] = match;
       }
@@ -39,7 +39,7 @@ const app = new Elysia()
       const labels = new Map<string, string | null>();
       // #<tags>
       if (msg.startsWith("#")) {
-        const match = msg.match(/#([^\s>]+)\s*(.*)/s);
+        const match = msg.match(/#([^\s<>]+)\s*(.*)/s);
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
         match[1].split("#").forEach((tag) => {
@@ -59,6 +59,15 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid > command");
         [, msg] = match;
         tags.add("context");
+      }
+      // < len > [msg]
+      if (msg.startsWith("<")) {
+        const match = msg.match(/<\s*(\d+)\s*>\s*(.*)/s);
+        if (!match) throw status(400, "invalid <> command");
+        [, , msg] = match;
+        const len = match[1];
+        tags.add("context");
+        labels.set("context", len);
       }
       // tags
       if (msg === "tags") return Array.from(tags).join(", ");
