@@ -657,7 +657,16 @@ const app = new Elysia()
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
       if (featureContext === "true" || tags.has("context")) {
-        const items = await redis.lrange(`context:${qq}:${group}`, -7, -1);
+        const value = labels.get("context");
+
+        let length = 7;
+        if (value) {
+          length = parseInt(value);
+          if (isNaN(length) || length < 1)
+            throw status(400, "invalid context length");
+        }
+
+        const items = await redis.lrange(`context:${qq}:${group}`, -length, -1);
         context = items
           .map((item) => JSON.parse(item) as ModelMessage[])
           .flat();
@@ -725,7 +734,7 @@ const app = new Elysia()
           messages.concat(response.messages).filter((m) => m.role !== "system")
         )
       );
-      await redis.ltrim(`context:${qq}:${group}`, -7, -1);
+      await redis.ltrim(`context:${qq}:${group}`, -42, -1);
       await redis.expire(`context:${qq}:${group}`, 3600);
       return text;
     },
