@@ -43,11 +43,14 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
         match[1].split("#").forEach((tag) => {
-          tags.add(tag);
           if (tag.includes(":")) {
             const [key, value] = tag.split(":", 2);
+            tags.add(key);
             labels.set(key, value);
-          } else labels.set(tag, null);
+          } else {
+            tags.add(tag);
+            labels.set(tag, null);
+          }
         });
       }
       // tags
