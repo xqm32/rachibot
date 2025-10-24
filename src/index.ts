@@ -53,6 +53,13 @@ const app = new Elysia()
           }
         });
       }
+      // > [msg]
+      if (msg.startsWith(">")) {
+        const match = msg.match(/>\s*(.*)/s);
+        if (!match) throw status(400, "invalid > command");
+        [, msg] = match;
+        tags.add("context");
+      }
       // tags
       if (msg === "tags") return Array.from(tags).join(", ");
       // labels
@@ -104,13 +111,6 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid echo command");
         [, msg] = match;
         return msg;
-      }
-      // > [msg]
-      else if (msg.startsWith(">")) {
-        const match = msg.match(/>\s*(.*)/s);
-        if (!match) throw status(400, "invalid > command");
-        [, msg] = match;
-        tags.add("context");
       }
 
       // 42
