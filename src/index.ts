@@ -653,20 +653,22 @@ const app = new Elysia()
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
       if (featureContext === "true" || tags.has("context")) {
-        const value = labels.get("context");
+        const value =
+          labels.get("context") ??
+          (await redis.hget(`feature:${qq}`, "length"));
+        tags.delete("context");
 
         let length = 7;
         if (value) {
-          length = parseInt(value);
-          if (isNaN(length) || length < 1)
-            throw status(400, "invalid context length");
+          const parsedValue = parseInt(value);
+          if (parsedValue >= 0 && parsedValue <= 42) length = parsedValue;
+          await redis.hset(`feature:${qq}`, "length", length.toString());
         }
 
-        const items = await redis.lrange(`context:${qq}:${group}`, -length, -1);
-        context = items
-          .map((item) => JSON.parse(item) as ModelMessage[])
-          .flat();
-        tags.delete("context");
+        if (length > 0)
+          context = (await redis.lrange(`context:${qq}:${group}`, -length, -1))
+            .map((item) => JSON.parse(item) as ModelMessage[])
+            .flat();
       }
       // context
       if (msg === "context") {
