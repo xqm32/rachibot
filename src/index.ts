@@ -334,6 +334,32 @@ const app = new Elysia()
         };
         return matches.map(format).join("\n");
       }
+      // 来点儿牌组 | 来点牌组 | 牌组 | decks | d
+      else if (["来点儿牌组", "来点牌组", "牌组", "decks", "d"].includes(msg)) {
+        const response = await fetch(
+          "https://api-takumi.mihoyo.com/event/cardsquare/index",
+          { method: "POST" }
+        );
+        const { data } = (await response.json()) as { data: unknown };
+
+        interface Deck {
+          nickname: string;
+          title: string;
+          tags: string[];
+          card_code: string;
+        }
+        const { list: decks } = data as { list: Deck[] };
+
+        return decks
+          .map((deck) =>
+            [
+              `🎴 ${deck.title}`,
+              `🎮 ${deck.nickname} 🏷️ ${deck.tags.join(", ")}`,
+              `🃏 ${deck.card_code}`,
+            ].join("\n")
+          )
+          .join("\n\n");
+      }
       // usage
       else if (msg === "usage") {
         const value = await redis.get(`usage:${qq}:${group}:last`);
