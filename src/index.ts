@@ -601,7 +601,7 @@ const app = new Elysia()
         content.push({ type: "text", text });
       }
 
-      const regex = /https?:\/\/\S+/g;
+      const regex = /https?:\/\/[^\s`]+/g;
       const links: Set<string> = new Set();
       ref?.match(regex)?.forEach((link) => links.add(link));
       msg.match(regex)?.forEach((link) => links.add(link));
