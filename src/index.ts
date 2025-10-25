@@ -623,13 +623,11 @@ const app = new Elysia()
               tags.delete("cheerio");
             }
 
-            return [
-              { type: "text", text: link },
-              { type: "text", text },
-            ] as TextPart[];
+            text = `<resource uri="${link}">\n${text}\n</resource>`;
+            return { type: "text", text } as TextPart;
           })
         );
-        content.push(...parts.flat());
+        content.push(...parts);
       }
 
       // /[name] -> ... -> /[provider/model]
