@@ -1,7 +1,7 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, ModelMessage, TextPart, UserContent } from "ai";
-import { redis } from "bun";
+import { redis, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -122,6 +122,58 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid echo command");
         [, msg] = match;
         return msg;
+      }
+      // compile <source>
+      else if (msg.startsWith("compile")) {
+        const match = msg.match(/compile\s+(.+)/s);
+        if (!match) throw status(400, "invalid compile command");
+        const [, source] = match;
+
+        let compiler;
+        if (labels.has("compiler")) [compiler] = labels.get("compiler") ?? [];
+        else compiler = await redis.get("key:$compiler");
+        if (!compiler) throw status(404, "compiler not found");
+
+        const body = {
+          source,
+          options: {
+            compilerOptions: {
+              executorRequest: true,
+            },
+          } as Record<string, unknown>,
+        };
+
+        if (labels.has("args")) {
+          const args = labels.get("args") ?? [];
+          body.options["userArguments"] = args.join(" ");
+        }
+
+        const response = await fetch(
+          `https://godbolt.org/api/compiler/${compiler}/compile`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(body),
+          }
+        );
+        const data = (await response.json()) as {
+          code: number;
+          stdout: { text: string }[];
+          buildResult: { stderr: { text: string }[] };
+        };
+
+        // #raw
+        if (tags.has("raw")) return data;
+
+        const { code, stdout, buildResult } = data;
+        if (code < 0) {
+          const error = buildResult.stderr.map((e) => e.text).join("\n");
+          throw status(422, stripANSI(error));
+        }
+        return stdout.map((e) => e.text).join("\n");
       }
 
       // 42
