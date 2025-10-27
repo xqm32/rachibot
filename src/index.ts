@@ -37,7 +37,7 @@ const app = new Elysia()
       const chain: string[] = [name];
 
       const tags = new Set<string>();
-      const labels = new Map<string, string | null>();
+      const labels = new Map<string, string[] | null>();
       // #<tags>
       while (msg.startsWith("#")) {
         const match = msg.match(/#([^\s<>]+)\s*(.*)/s);
@@ -47,7 +47,8 @@ const app = new Elysia()
           if (tag.includes(":")) {
             const [key, value] = tag.split(":", 2);
             tags.add(key);
-            labels.set(key, value);
+            if (labels.has(key)) labels.get(key)?.push(value);
+            else labels.set(key, [value]);
           } else {
             tags.add(tag);
             labels.set(tag, null);
@@ -68,14 +69,14 @@ const app = new Elysia()
         [, , msg] = match;
         const len = match[1];
         tags.add("context");
-        labels.set("context", len);
+        labels.set("context", [len]);
       }
       // tags
       if (msg === "tags") return Array.from(tags).join(", ");
       // labels
       if (msg === "labels")
         return Array.from(labels.entries())
-          .map(([k, v]) => (v ? `${k}: ${v}` : k))
+          .map(([k, v]) => (v ? `${k}: ${v.join(", ")}` : k))
           .join("\n");
 
       // ref
@@ -675,9 +676,8 @@ const app = new Elysia()
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
       if (featureContext === "true" || tags.has("context")) {
-        const value =
-          labels.get("context") ??
-          (await redis.hget(`feature:${qq}`, "length"));
+        const featureLength = await redis.hget(`feature:${qq}`, "length");
+        const [value] = labels.get("context") ?? [featureLength];
         tags.delete("context");
 
         let length = 7;
