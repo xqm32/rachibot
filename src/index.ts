@@ -197,6 +197,9 @@ const app = new Elysia()
         const [pull] = data;
         return `${pull.title}\n${pull.html_url}`;
       }
+      // <code>
+      else if (msg.length === 3 && !isNaN(parseInt(msg)))
+        return `https://http.cat/${msg}.jpg`;
       // ip <address>
       else if (msg.startsWith("ip")) {
         const match = msg.match(/ip\s*(\S*)/s);
