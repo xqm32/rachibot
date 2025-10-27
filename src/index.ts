@@ -146,6 +146,9 @@ const app = new Elysia()
         if (labels.has("args")) {
           const args = labels.get("args") ?? [];
           body.options["userArguments"] = args.join(" ");
+        } else {
+          const args = await redis.get("key:$args");
+          if (args) body.options["userArguments"] = args;
         }
 
         const response = await fetch(
