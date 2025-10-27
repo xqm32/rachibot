@@ -370,11 +370,6 @@ const app = new Elysia()
       }
 
       const content: UserContent = [];
-      if (image) {
-        const url = URL.parse(image);
-        if (url) content.push({ type: "image", image: url });
-      }
-      if (ref) content.push({ type: "text", text: ref });
       const messages: ModelMessage[] = [];
 
       // help
@@ -738,8 +733,13 @@ const app = new Elysia()
 
       // system
       // user [image, ref, msg]
+      if (image) {
+        const url = URL.parse(image);
+        if (url) content.push({ type: "image", image: url });
+      }
+      if (ref) content.push({ type: "text", text: ref });
+      if (msg.length > 0) content.push({ type: "text", text: msg });
       if (content.length > 0) messages.push({ role: "user", content });
-      if (msg.length > 0) messages.push({ role: "user", content: msg });
 
       if (!messages.some((m) => m.role === "user"))
         throw status(400, "no user message");
