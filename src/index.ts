@@ -167,7 +167,7 @@ const app = new Elysia()
         // #raw
         if (tags.has("raw")) return text;
 
-        const data = (await response.json()) as {
+        const data = JSON.parse(text) as {
           code: number;
           stdout: { text: string }[];
           buildResult: { stderr: { text: string }[] };
