@@ -162,15 +162,16 @@ const app = new Elysia()
             body: JSON.stringify(body),
           }
         );
+        const text = await response.text();
+
+        // #raw
+        if (tags.has("raw")) return text;
+
         const data = (await response.json()) as {
           code: number;
           stdout: { text: string }[];
           buildResult: { stderr: { text: string }[] };
         };
-
-        // #raw
-        if (tags.has("raw")) return data;
-
         const { code, stdout, buildResult } = data;
         if (code < 0) {
           const error = buildResult.stderr.map((e) => e.text).join("\n");
