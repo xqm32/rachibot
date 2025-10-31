@@ -801,7 +801,7 @@ const app = new Elysia()
       if (content.length > 0) messages.push({ role: "user", content });
 
       if (!messages.some((m) => m.role === "user"))
-        throw status(400, "no user message");
+        return chain.map((v) => `/${v}`).join(" -> ");
 
       const model = openrouter(name);
       const { text, usage, response } = await generateText({
