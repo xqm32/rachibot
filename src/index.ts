@@ -821,7 +821,7 @@ const app = new Elysia()
       if (ref) {
         const prefix = await redis.get("key:$prefix");
         if (prefix) ref = ref.slice(prefix.length).trim();
-        content.push({ type: "text", text: ref });
+        content.push({ type: "text", text: `<quote>\n${ref}\n</quote>` });
       }
       if (msg.length > 0) content.push({ type: "text", text: msg });
       if (content.length > 0) messages.push({ role: "user", content });
