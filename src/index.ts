@@ -271,6 +271,28 @@ const app = new Elysia()
         const { location } = data as { location: string };
         return location;
       }
+      // resolve <name>
+      else if (msg.startsWith("resolve")) {
+        const match = msg.match(/resolve\s*(\S+)/s);
+        if (!match) throw status(400, "invalid resolve command");
+        const [, name] = match;
+
+        const url = new URL("https://dns.google/resolve");
+        url.searchParams.append("name", name);
+        const response = await fetch(url);
+        const data = (await response.json()) as {
+          Status: number;
+          Answer?: { data: string }[];
+          Comment?: string;
+        };
+
+        // #raw
+        if (tags.has("raw")) return data;
+
+        if (!data.Answer) throw status(404, data.Comment ?? data);
+
+        return data.Answer.map((answer) => answer.data).join("\n");
+      }
       // list models [filter]
       else if (msg.startsWith("list models")) {
         const match = msg.match(/list models\s*(.*)/s);
