@@ -796,7 +796,11 @@ const app = new Elysia()
         const url = URL.parse(image);
         if (url) content.push({ type: "image", image: url });
       }
-      if (ref) content.push({ type: "text", text: ref });
+      if (ref) {
+        const prefix = await redis.get("key:$prefix");
+        if (prefix) ref = ref.slice(prefix.length).trim();
+        content.push({ type: "text", text: ref });
+      }
       if (msg.length > 0) content.push({ type: "text", text: msg });
       if (content.length > 0) messages.push({ role: "user", content });
 
