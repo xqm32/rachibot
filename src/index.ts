@@ -714,22 +714,34 @@ const app = new Elysia()
         // #links
         if (tags.has("links")) return Array.from(links).join("\n");
 
+        const requestInit: RequestInit = {};
+        const userAgent = await redis.get("key:$user-agent");
+        if (userAgent) requestInit.headers = { "User-Agent": userAgent };
+
         tags.add("links");
         const parts = await Promise.all(
-          Array.from(links).map(async (link) => {
-            const response = await fetch(link);
-            let text = await response.text();
+          Array.from(links)
+            .map((link) => URL.parse(link))
+            .filter((url) => url !== null)
+            .map(async (link) => {
+              const response = await fetch(link, requestInit);
+              let text = await response.text();
 
-            const featureCheerio = await redis.hget(`feature:${qq}`, "cheerio");
-            if (featureCheerio === "true" || tags.has("cheerio")) {
-              text = load(text).text();
-              tags.delete("cheerio");
-            }
+              const featureCheerio = await redis.hget(
+                `feature:${qq}`,
+                "cheerio"
+              );
+              // mp.weixin.qq.com
+              if (link.hostname === "mp.weixin.qq.com")
+                text = load(text)("#js_content").text();
+              else if (featureCheerio === "true" || tags.has("cheerio"))
+                text = load(text).text();
 
-            text = `<resource uri="${link}">\n${text}\n</resource>`;
-            return { type: "text", text } as TextPart;
-          })
+              text = `<resource uri="${link}">\n${text}\n</resource>`;
+              return { type: "text", text } as TextPart;
+            })
         );
+        tags.delete("cheerio");
         content.push(...parts);
       }
 
