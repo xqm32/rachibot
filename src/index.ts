@@ -759,9 +759,10 @@ const app = new Elysia()
         chain.push(name);
       }
       // name
-      if (tags.has("name")) return name;
+      if (tags.has("name") || msg === "name") return name;
       // chain
-      if (tags.has("chain")) return chain.map((v) => `/${v}`).join(" -> ");
+      if (tags.has("chain") || msg === "chain")
+        return chain.map((v) => `/${v}`).join(" -> ");
 
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
