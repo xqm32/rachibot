@@ -16,6 +16,7 @@ RUN bun build \
 	--compile \
 	--minify-whitespace \
 	--minify-syntax \
+	--bytecode \
 	--outfile server \
 	src/index.ts
 
