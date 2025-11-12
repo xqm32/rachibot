@@ -79,36 +79,76 @@ const app = new Elysia()
           .map(([k, v]) => (v ? `${k}: ${v.join(", ")}` : k))
           .join("\n");
 
-      // ref
-      // set <key>
-      if (msg.startsWith("set") && ref) {
-        const match = msg.match(/set\s+(\S+)/s);
-        if (!match) throw status(400, "invalid set command");
-        const [, key] = match;
-        await redis.set(`key:${key}`, ref);
-        return `${key}: ${ref}`;
-      }
-      // set <key> <value>
-      else if (msg.startsWith("set")) {
-        const match = msg.match(/set\s+(\S+)\s+(.+)/s);
-        if (!match) throw status(400, "invalid set command");
-        const [, key, value] = match;
+      // [ref]
+      // set <key> [value]
+      if (msg.startsWith("set")) {
+        let key, value;
+        if (ref) {
+          const match = msg.match(/set\s+(\S+)/s);
+          if (!match) throw status(400, "invalid set command");
+          [, key] = match;
+          value = ref;
+        } else {
+          const match = msg.match(/set\s+(\S+)\s+(.+)/s);
+          if (!match) throw status(400, "invalid set command");
+          [, key, value] = match;
+        }
         await redis.set(`key:${key}`, value);
+        await redis.rpush(
+          `key:${key}:history`,
+          JSON.stringify({
+            value,
+            updatedAt: dayjs(),
+            updatedBy: qq,
+          })
+        );
+        await redis.ltrim(`key:${key}:history`, -42, -1);
         return `${key}: ${value}`;
       }
-      // ref
-      // get
-      else if (msg === "get" && ref) {
-        const value = await redis.get(`key:${ref}`);
-        if (!value) throw status(404, `key ${ref} not found`);
-        return value;
+      // [ref]
+      // get history [key]
+      else if (msg.startsWith("get history")) {
+        let key, histories;
+        if (ref) {
+          key = ref;
+          histories = await redis.lrange(`key:${ref}:history`, 0, -1);
+        } else {
+          const match = msg.match(/get history\s+(\S+)/s);
+          if (!match) throw status(400, "invalid get history command");
+          [, key] = match;
+          histories = await redis.lrange(`key:${key}:history`, 0, -1);
+        }
+        if (histories.length === 0)
+          throw status(404, `key ${key} history not found`);
+        // #raw
+        if (tags.has("raw")) return histories;
+        return histories
+          .reverse()
+          .map((v) => JSON.parse(v))
+          .map(({ value, updatedAt, updatedBy }) =>
+            [
+              value,
+              `⏱️ ${dayjs(updatedAt)
+                .tz("Asia/Shanghai")
+                .format("YYYY-MM-DD HH:mm:ss")}`,
+              `✍️ ${updatedBy}`,
+            ].join("\n")
+          )
+          .join("\n=====\n");
       }
-      // get <key>
+      // [ref]
+      // get [key]
       else if (msg.startsWith("get")) {
-        const match = msg.match(/get\s+(\S+)/s);
-        if (!match) throw status(400, "invalid get command");
-        const [, key] = match;
-        const value = await redis.get(`key:${key}`);
+        let key, value;
+        if (ref) {
+          key = ref;
+          value = await redis.get(`key:${ref}`);
+        } else {
+          const match = msg.match(/get\s+(\S+)/s);
+          if (!match) throw status(400, "invalid get command");
+          [, key] = match;
+          value = await redis.get(`key:${key}`);
+        }
         if (!value) throw status(404, `key ${key} not found`);
         return value;
       }
