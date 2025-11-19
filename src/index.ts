@@ -859,6 +859,13 @@ const app = new Elysia()
       // clear
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
 
+      // : [msg]
+      if (msg.startsWith(":")) {
+        const match = msg.match(/:\s*(.*)/s);
+        if (!match) throw status(400, "invalid : command");
+        [, msg] = match;
+      }
+
       for (const tag of tags) {
         const value = await redis.get(`key:#${tag}`);
         if (!value) throw status(404, `key #${tag} not found`);
