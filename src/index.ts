@@ -774,6 +774,9 @@ const app = new Elysia()
               // mp.weixin.qq.com
               if (link.hostname === "mp.weixin.qq.com")
                 text = load(text)("#js_content").text();
+              // tc39.es
+              else if (link.hostname === "tc39.es")
+                text = load(text).text().replaceAll(/\s+/g, "");
               else if (featureCheerio === "true" || tags.has("cheerio"))
                 text = load(text).text();
 
