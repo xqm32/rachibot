@@ -902,6 +902,7 @@ const app = new Elysia()
       const { text, usage, response } = await generateText({
         model,
         messages: context.concat(messages),
+        providerOptions: { openrouter: { user: qq } },
       });
       const { modelId } = response;
       await redis.set(
