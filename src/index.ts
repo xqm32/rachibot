@@ -490,6 +490,24 @@ const app = new Elysia()
           .map(([k, v]) => `${k}: ${v}`)
           .join("\n");
       }
+      // credits
+      else if (msg === "credits") {
+        const response = await fetch("https://openrouter.ai/api/v1/credits", {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          },
+        });
+        const {
+          data: { total_credits, total_usage },
+        } = (await response.json()) as {
+          data: { total_credits: number; total_usage: number };
+        };
+        return [
+          `💰 $${total_credits.toFixed(2)}`,
+          `💸 $${total_usage.toFixed(2)}`,
+          `🤑 $${(total_credits - total_usage).toFixed(2)}`,
+        ].join("\n");
+      }
 
       const content: UserContent = [];
       const messages: ModelMessage[] = [];
@@ -518,19 +536,6 @@ const app = new Elysia()
           }
         )) as unknown as { data: string };
         content.push({ type: "text", text: data });
-      }
-      // credits
-      else if (msg === "credits") {
-        msg = "";
-        tags.add("credits");
-
-        const response = await fetch("https://openrouter.ai/api/v1/credits", {
-          headers: {
-            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          },
-        });
-        const text = await response.text();
-        content.push({ type: "text", text });
       }
       // lol [filter] [start] [end]
       else if (msg.startsWith("lol")) {
