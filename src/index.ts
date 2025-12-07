@@ -20,89 +20,94 @@ const openrouter = createOpenRouter({
 
 export const bot = new Bot(process.env.BOT_TOKEN!);
 bot.command("7s", async (ctx) => {
-  try {
-    const args = ctx.match.trim();
+  await ctx.replyWithChatAction("typing");
+  (async () => {
+    try {
+      const args = ctx.match.trim();
 
-    let aliases: Record<string | number, number> = {};
-    const text = await redis.get("7s:aliases");
-    if (!text || args === "换班时间") {
-      const { data } = (await request(
-        "GET /repos/{owner}/{repo}/contents/{path}",
-        {
-          mediaType: { format: "raw" },
-          owner: "genius-invokation",
-          repo: "nonebot_plugin_7s_card_img",
-          path: "map/NameMap.json",
-          headers: {
-            authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
+      let aliases: Record<string | number, number> = {};
+      const text = await redis.get("7s:aliases");
+      if (!text || args === "换班时间") {
+        const { data } = (await request(
+          "GET /repos/{owner}/{repo}/contents/{path}",
+          {
+            mediaType: { format: "raw" },
+            owner: "genius-invokation",
+            repo: "nonebot_plugin_7s_card_img",
+            path: "map/NameMap.json",
+            headers: {
+              authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          }
+        )) as unknown as { data: string };
+
+        interface Name {
+          id: number;
+          name: string;
+          englishName: string;
+          pinyin: string;
+          aliases: string[];
         }
-      )) as unknown as { data: string };
+        const names = JSON.parse(data) as Name[];
+        for (const name of names) {
+          aliases[name.id] = name.id;
+          aliases[name.name] = name.id;
+          aliases[name.englishName] = name.id;
+          aliases[name.pinyin] = name.id;
+          for (const alias of name.aliases) aliases[alias] = name.id;
+        }
+        await redis.set("7s:aliases", JSON.stringify(aliases), "EX", 86400);
+      } else aliases = JSON.parse(text) as typeof aliases;
 
-      interface Name {
-        id: number;
-        name: string;
-        englishName: string;
-        pinyin: string;
-        aliases: string[];
-      }
-      const names = JSON.parse(data) as Name[];
-      for (const name of names) {
-        aliases[name.id] = name.id;
-        aliases[name.name] = name.id;
-        aliases[name.englishName] = name.id;
-        aliases[name.pinyin] = name.id;
-        for (const alias of name.aliases) aliases[alias] = name.id;
-      }
-      await redis.set("7s:aliases", JSON.stringify(aliases), "EX", 86400);
-    } else aliases = JSON.parse(text) as typeof aliases;
+      const id = aliases[args];
+      if (!id) throw new Error(`character ${args} not found`);
 
-    const id = aliases[args];
-    if (!id) throw new Error(`character ${args} not found`);
-
-    await ctx.replyWithChatAction("upload_photo");
-    const resposne = await fetch(
-      "https://card-img-renderer.7shengzhaohuan.online/render",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          version: "beta",
-          authorImageUrl:
-            "https://7s-1304005994.cos.ap-singapore.myqcloud.com/dudubot.png",
-          authorName: "谷雨同学 & clezn",
-          renderFormat: "webp",
-          renderQuality: 0.75,
-        }),
-      }
-    );
-    const { url } = (await resposne.json()) as { url: string };
-    await ctx.replyWithPhoto(new InputFile(await fetch(url)));
-  } catch (error) {
-    await ctx.reply(String(error));
-  }
+      await ctx.replyWithChatAction("upload_photo");
+      const resposne = await fetch(
+        "https://card-img-renderer.7shengzhaohuan.online/render",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id,
+            version: "beta",
+            authorImageUrl:
+              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/dudubot.png",
+            authorName: "谷雨同学 & clezn",
+            renderFormat: "webp",
+            renderQuality: 0.75,
+          }),
+        }
+      );
+      const { url } = (await resposne.json()) as { url: string };
+      await ctx.replyWithPhoto(new InputFile(await fetch(url)));
+    } catch (error) {
+      await ctx.reply(String(error));
+    }
+  })();
 });
 bot.hears(/\/\s*(.*)/s, async (ctx) => {
-  try {
-    const qq = ctx.from?.id ? ctx.from.id.toString() : ctx.from?.id;
-    const group = ctx.chatId.toString();
-    const [, msg] = ctx.match;
-    const ref = ctx.message?.reply_to_message?.text;
+  await ctx.replyWithChatAction("typing");
+  (async () => {
+    try {
+      const qq = ctx.from?.id ? ctx.from.id.toString() : ctx.from?.id;
+      const group = ctx.chatId.toString();
+      const [, msg] = ctx.match;
+      const ref = ctx.message?.reply_to_message?.text;
 
-    await ctx.replyWithChatAction("typing");
-    const request = new Request("http://localhost/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ qq, group, msg, ref }),
-    });
-    const response = await app.handle(request);
-    const text = await response.text();
-    await ctx.reply(text.slice(0, 4096));
-  } catch (error) {
-    await ctx.reply(String(error));
-  }
+      const request = new Request("http://localhost/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qq, group, msg, ref }),
+      });
+      const response = await app.handle(request);
+      const text = await response.text();
+      await ctx.reply(text.slice(0, 4096));
+    } catch (error) {
+      await ctx.reply(String(error));
+    }
+  })();
 });
 
 const app = new Elysia()
