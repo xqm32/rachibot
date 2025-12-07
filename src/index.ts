@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { Elysia, status, t } from "elysia";
+import { Bot, webhookCallback } from "grammy";
 import net from "net";
 
 dayjs.extend(utc);
@@ -944,6 +945,26 @@ const app = new Elysia()
       }
     );
     return new Response(response.body);
+  })
+  .post(`/${process.env.BOT_TOKEN}`, async (context) => {
+    const bot = new Bot(process.env.BOT_TOKEN!);
+    bot.hears(/\/\s*(.*)/s, async (ctx) => {
+      const qq = ctx.from?.id ? ctx.from.id.toString() : ctx.from?.id;
+      const group = ctx.chatId.toString();
+      const [, msg] = ctx.match;
+      const ref = ctx.message?.reply_to_message?.text;
+
+      await ctx.replyWithChatAction("typing");
+      const request = new Request("http://localhost/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qq, group, msg, ref }),
+      });
+      const response = await app.handle(request);
+      const text = await response.text();
+      await ctx.reply(text);
+    });
+    return await webhookCallback(bot, "elysia")(context);
   })
   .listen(process.env.PORT ?? 3000);
 
