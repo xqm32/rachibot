@@ -962,7 +962,7 @@ const app = new Elysia()
       });
       const response = await app.handle(request);
       const text = await response.text();
-      await ctx.reply(text);
+      await ctx.reply(text.slice(0, 4096));
     });
     return await webhookCallback(bot, "elysia")(context);
   })
