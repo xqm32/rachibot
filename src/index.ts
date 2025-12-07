@@ -18,6 +18,24 @@ const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
 });
 
+export const bot = new Bot(process.env.BOT_TOKEN!);
+bot.hears(/\/\s*(.*)/s, async (ctx) => {
+  const qq = ctx.from?.id ? ctx.from.id.toString() : ctx.from?.id;
+  const group = ctx.chatId.toString();
+  const [, msg] = ctx.match;
+  const ref = ctx.message?.reply_to_message?.text;
+
+  await ctx.replyWithChatAction("typing");
+  const request = new Request("http://localhost/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ qq, group, msg, ref }),
+  });
+  const response = await app.handle(request);
+  const text = await response.text();
+  await ctx.reply(text.slice(0, 4096));
+});
+
 const app = new Elysia()
   .get("/", () => "Hello Elysia")
   .post(
@@ -946,28 +964,8 @@ const app = new Elysia()
     );
     return new Response(response.body);
   })
-  .post(`/${process.env.BOT_TOKEN}`, async (context) => {
-    const bot = new Bot(process.env.BOT_TOKEN!);
-    bot.hears(/\/\s*(.*)/s, async (ctx) => {
-      const qq = ctx.from?.id ? ctx.from.id.toString() : ctx.from?.id;
-      const group = ctx.chatId.toString();
-      const [, msg] = ctx.match;
-      const ref = ctx.message?.reply_to_message?.text;
+  .post(`/${process.env.BOT_TOKEN}`, (context) =>
+    webhookCallback(bot, "elysia")(context)
+  );
 
-      await ctx.replyWithChatAction("typing");
-      const request = new Request("http://localhost/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qq, group, msg, ref }),
-      });
-      const response = await app.handle(request);
-      const text = await response.text();
-      await ctx.reply(text.slice(0, 4096));
-    });
-    return await webhookCallback(bot, "elysia")(context);
-  })
-  .listen(process.env.PORT ?? 3000);
-
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+export default app;
