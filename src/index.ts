@@ -54,7 +54,7 @@ bot.command("7s", async (ctx) => {
             id,
             version: "beta",
             authorImageUrl:
-              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/dudubot.png",
+              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/rachilabs_bot_v1.png",
             authorName: "谷雨同学 & clezn",
             renderFormat: "webp",
             renderQuality: 0.75,
