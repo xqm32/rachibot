@@ -25,43 +25,23 @@ bot.command("7s", async (ctx) => {
     try {
       const args = ctx.match.trim();
 
-      let aliases: Record<string | number, number> = {};
-      const text = await redis.get("7s:aliases");
-      if (!text || args === "换班时间") {
-        const { data } = (await request(
-          "GET /repos/{owner}/{repo}/contents/{path}",
-          {
-            mediaType: { format: "raw" },
-            owner: "genius-invokation",
-            repo: "nonebot_plugin_7s_card_img",
-            path: "map/NameMap.json",
-            headers: {
-              authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-          }
-        )) as unknown as { data: string };
-
-        interface Name {
-          id: number;
-          name: string;
-          englishName: string;
-          pinyin: string;
-          aliases: string[];
-        }
-        const names = JSON.parse(data) as Name[];
-        for (const name of names) {
-          aliases[name.id] = name.id;
-          aliases[name.name] = name.id;
-          aliases[name.englishName] = name.id;
-          aliases[name.pinyin] = name.id;
-          for (const alias of name.aliases) aliases[alias] = name.id;
-        }
-        await redis.set("7s:aliases", JSON.stringify(aliases), "EX", 86400);
-      } else aliases = JSON.parse(text) as typeof aliases;
-
-      const id = aliases[args];
-      if (!id) throw new Error(`character ${args} not found`);
+      const fuzzyMatchURL = new URL(process.env.FUZZY_MATCH_URL!);
+      fuzzyMatchURL.searchParams.append("query", args);
+      const fuzzyMatchResponse = await fetch(fuzzyMatchURL);
+      if (!fuzzyMatchResponse.ok) throw new Error("fuzzy match request failed");
+      const { matched, fallback, query } =
+        (await fuzzyMatchResponse.json()) as {
+          matched: boolean;
+          fallback: string[];
+          query: string;
+        };
+      if (!matched) {
+        const suggestions = fallback.join(", ");
+        await ctx.reply(`did you mean ${suggestions}?`);
+        return;
+      }
+      const id = parseInt(query);
+      if (isNaN(id)) throw new Error("invalid card id");
 
       await ctx.replyWithChatAction("upload_photo");
       const resposne = await fetch(
