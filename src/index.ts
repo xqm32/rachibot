@@ -36,6 +36,7 @@ bot.command("7s", async (ctx) => {
           query: string;
         };
       if (!matched) {
+        if (fallback.length === 0) throw new Error(`${args} not found`);
         const suggestions = fallback.join(", ");
         await ctx.reply(`did you mean ${suggestions}?`);
         return;
