@@ -19,7 +19,7 @@ const openrouter = createOpenRouter({
 });
 
 export const bot = new Bot(process.env.BOT_TOKEN!);
-bot.command("7s", async (ctx) => {
+bot.command(["7s", "card"], async (ctx) => {
   await ctx.replyWithChatAction("typing");
   (async () => {
     try {
@@ -58,6 +58,7 @@ bot.command("7s", async (ctx) => {
             authorName: "谷雨同学 & clezn",
             renderFormat: "webp",
             renderQuality: 0.75,
+            language: ctx.hasCommand("7s") ? "CHS" : "EN",
           }),
         }
       );
