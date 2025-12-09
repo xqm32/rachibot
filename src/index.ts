@@ -55,7 +55,7 @@ bot.command(["7s", "card"], async (ctx) => {
             version: "beta",
             authorImageUrl:
               "https://7s-1304005994.cos.ap-singapore.myqcloud.com/rachilabs_bot_v1.png",
-            authorName: "谷雨同学 & clezn",
+            authorName: "Piovium Labs",
             renderFormat: "webp",
             renderQuality: 0.75,
             language: ctx.hasCommand("7s") ? "CHS" : "EN",
