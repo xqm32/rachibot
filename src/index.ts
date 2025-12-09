@@ -54,7 +54,7 @@ bot.command(["7s", "card"], async (ctx) => {
             id,
             version: "beta",
             authorImageUrl:
-              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/rachilabs_bot_v1.png",
+              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/clezn.jpg",
             authorName: "Piovium Labs",
             renderFormat: "webp",
             renderQuality: 0.75,
