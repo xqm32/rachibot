@@ -32,12 +32,14 @@ bot.command(["7s", "card"], async (ctx) => {
       const { matched, fallback, query } =
         (await fuzzyMatchResponse.json()) as {
           matched: boolean;
-          fallback: string[];
+          fallback: string[][];
           query: string;
         };
       if (!matched) {
         if (fallback.length === 0) throw new Error(`${args} not found`);
-        const suggestions = fallback.join(", ");
+        const chs = fallback.map(([chs]) => chs);
+        const en = fallback.map(([, en]) => en);
+        const suggestions = (ctx.hasCommand("7s") ? chs : en).join(", ");
         await ctx.reply(`did you mean ${suggestions}?`);
         return;
       }
