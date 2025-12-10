@@ -336,8 +336,10 @@ const app = new Elysia()
       // rooms | r
       else if (msg === "rooms" || msg === "r") {
         const [main, beta] = await Promise.all([
-          fetch("https://gi.xqm32.org/api/rooms").then((r) => r.json()),
-          fetch("https://beta.gi.xqm32.org/api/rooms").then((r) => r.json()),
+          fetch("https://play.piovium.org/api/rooms").then((r) => r.json()),
+          fetch("https://beta.play.piovium.org/api/rooms").then((r) =>
+            r.json()
+          ),
         ]);
 
         // #raw
