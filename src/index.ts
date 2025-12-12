@@ -46,6 +46,13 @@ bot.command(["7s", "card"], async (ctx) => {
       const id = parseInt(query);
       if (isNaN(id)) throw new Error("invalid card id");
 
+      const versionResponse = await fetch(
+        "https://beta.play.piovium.org/api/version"
+      );
+      const { currentGameVersion } = (await versionResponse.json()) as {
+        currentGameVersion: string;
+      };
+
       await ctx.replyWithChatAction("upload_photo");
       const resposne = await fetch(
         "https://card-img-renderer.7shengzhaohuan.online/render",
@@ -57,6 +64,7 @@ bot.command(["7s", "card"], async (ctx) => {
             version: "beta",
             authorImageUrl:
               "https://7s-1304005994.cos.ap-singapore.myqcloud.com/clezn.jpg",
+            authorName: currentGameVersion,
             renderFormat: "webp",
             renderQuality: 0.75,
             language: ctx.hasCommand("7s") ? "CHS" : "EN",
