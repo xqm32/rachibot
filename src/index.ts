@@ -61,10 +61,9 @@ bot.command(["7s", "card"], async (ctx) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id,
-            version: "beta",
+            version: currentGameVersion,
             authorImageUrl:
               "https://7s-1304005994.cos.ap-singapore.myqcloud.com/clezn.jpg",
-            authorName: currentGameVersion,
             renderFormat: "webp",
             renderQuality: 0.75,
             language: ctx.hasCommand("7s") ? "CHS" : "EN",
