@@ -76,6 +76,7 @@ bot.command(["7s", "card"], async (ctx) => {
             renderFormat: "webp",
             renderQuality: 0.75,
             language: ctx.hasCommand("7s") ? "CHS" : "EN",
+            displayId: false,
           }),
         }
       );
