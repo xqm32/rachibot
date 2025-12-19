@@ -123,7 +123,7 @@ const app = new Elysia()
       let name = "";
       // /[name]
       if (msg.startsWith("/")) {
-        const match = msg.match(/\/([^\s#<>]*)\s*(.*)/s);
+        const match = msg.match(/\/([^\s#<>:]*)\s*(.*)/s);
         if (!match) throw status(400, "invalid / command");
         [, name, msg] = match;
       }
