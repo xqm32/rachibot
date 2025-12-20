@@ -7,7 +7,7 @@ import {
   TextPart,
   UserContent,
 } from "ai";
-import { redis, stripANSI } from "bun";
+import { randomUUIDv7, redis, s3, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -1010,7 +1010,7 @@ const app = new Elysia()
         return chain.map((v) => `/${v}`).join(" -> ");
 
       const model = openrouter(name);
-      const { text, usage, response } = await generateText({
+      const { text, files, usage, response } = await generateText({
         model,
         messages: context.concat(messages),
         providerOptions: { openrouter: { user: qq } },
@@ -1028,6 +1028,19 @@ const app = new Elysia()
       );
       await redis.ltrim(`context:${qq}:${group}`, -42, -1);
       await redis.expire(`context:${qq}:${group}`, 3600);
+
+      const images = await Promise.all(
+        files
+          .filter((file) => file.mediaType.startsWith("image/"))
+          .map(async (image) => {
+            const extension = image.mediaType.split("/").at(-1);
+            const imageFile = s3.file(`${randomUUIDv7()}.${extension}`);
+            await imageFile.write(image.uint8Array);
+            return imageFile.presign();
+          })
+      );
+      if (images.length > 0) return images.join("\n");
+
       return text;
     },
     {
