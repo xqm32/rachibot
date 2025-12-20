@@ -1,6 +1,12 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { generateText, ModelMessage, TextPart, UserContent } from "ai";
+import {
+  FilePart,
+  generateText,
+  ModelMessage,
+  TextPart,
+  UserContent,
+} from "ai";
 import { redis, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
@@ -877,6 +883,16 @@ const app = new Elysia()
               // tc39.es
               else if (link.hostname === "tc39.es")
                 text = load(text).text().replaceAll(/\s+/g, "");
+              // arxiv.org/pdf
+              else if (
+                link.hostname === "arxiv.org" &&
+                link.pathname.startsWith("/pdf/")
+              )
+                return {
+                  type: "file",
+                  data: link,
+                  mediaType: "application/pdf",
+                } as FilePart;
               else if (featureCheerio === "true" || tags.has("cheerio"))
                 text = load(text).text();
 
