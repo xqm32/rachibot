@@ -109,6 +109,10 @@ bot.hears(/\/\s*(.*)/s, async (ctx) => {
       });
       const response = await app.handle(request);
       const text = await response.text();
+      if (response.headers.get("X-Images")) {
+        for (const url of text.split("\n")) await ctx.replyWithPhoto(url);
+        return;
+      }
       await ctx.reply(text.slice(0, 4096));
     } catch (error) {
       await ctx.reply(String(error));
@@ -120,7 +124,7 @@ const app = new Elysia()
   .get("/", () => "Hello Elysia")
   .post(
     "/",
-    async ({ body }) => {
+    async ({ body, set }) => {
       let { qq, group, msg, ref, image } = body;
 
       const snapshot = { qq, group, msg, ref, image: image?.slice(0, 42) };
@@ -1039,7 +1043,10 @@ const app = new Elysia()
             return imageFile.presign();
           })
       );
-      if (images.length > 0) return images.join("\n");
+      if (images.length > 0) {
+        set.headers["X-Images"] = images.length;
+        return images.join("\n");
+      }
 
       return text;
     },
