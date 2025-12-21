@@ -1035,6 +1035,7 @@ const app = new Elysia()
 
       const images = await Promise.all(
         files
+          .slice(0, 1)
           .filter((file) => file.mediaType.startsWith("image/"))
           .map(async (image) => {
             const extension = image.mediaType.split("/").at(-1);
