@@ -886,6 +886,14 @@ const app = new Elysia()
                 } as FilePart;
 
               const response = await fetch(link, requestInit);
+
+              if (response.headers.get("Content-Type") === "application/pdf")
+                return {
+                  type: "file",
+                  data: link,
+                  mediaType: "application/pdf",
+                } as FilePart;
+
               let text = await response.text();
 
               const featureCheerio = await redis.hget(
