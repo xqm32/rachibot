@@ -874,6 +874,17 @@ const app = new Elysia()
             .map((link) => URL.parse(link))
             .filter((url) => url !== null)
             .map(async (link) => {
+              // arxiv.org/pdf
+              if (
+                link.hostname === "arxiv.org" &&
+                link.pathname.startsWith("/pdf/")
+              )
+                return {
+                  type: "file",
+                  data: link,
+                  mediaType: "application/pdf",
+                } as FilePart;
+
               const response = await fetch(link, requestInit);
               let text = await response.text();
 
@@ -887,16 +898,6 @@ const app = new Elysia()
               // tc39.es
               else if (link.hostname === "tc39.es")
                 text = load(text).text().replaceAll(/\s+/g, "");
-              // arxiv.org/pdf
-              else if (
-                link.hostname === "arxiv.org" &&
-                link.pathname.startsWith("/pdf/")
-              )
-                return {
-                  type: "file",
-                  data: link,
-                  mediaType: "application/pdf",
-                } as FilePart;
               else if (featureCheerio === "true" || tags.has("cheerio"))
                 text = load(text).text();
 
