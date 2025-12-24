@@ -143,7 +143,7 @@ const app = new Elysia()
       const labels = new Map<string, string[] | null>();
       // #<tags>
       while (msg.startsWith("#")) {
-        const match = msg.match(/#([^\s<>]+)\s*(.*)/s);
+        const match = msg.match(/#([^\s<>:]+)\s*(.*)/s);
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
         match[1].split("#").forEach((tag) => {
