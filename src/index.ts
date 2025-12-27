@@ -160,9 +160,9 @@ const app = new Elysia()
       }
       // > [msg]
       if (msg.startsWith(">")) {
-        const match = msg.match(/>\s*(.*)/s);
-        if (!match) throw status(400, "invalid > command");
-        [, msg] = match;
+        const match = msg.match(/>\s*(.+)/s);
+        if (!match) msg = "context";
+        else [, msg] = match;
         tags.add("context");
       }
       // < len > [msg]
