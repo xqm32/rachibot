@@ -400,7 +400,7 @@ const app = new Elysia()
         return `${pull.title}\n${pull.html_url}`;
       }
       // <code>
-      else if (msg.length === 3 && !isNaN(parseInt(msg)))
+      else if (msg.length === 3 && /^\d{3}$/.test(msg))
         return `https://http.cat/${msg}.jpg`;
       // ip <address>
       else if (msg.startsWith("ip")) {
