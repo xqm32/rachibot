@@ -13,6 +13,13 @@ import starryNightStyleCore from "@wooorm/starry-night/style/core" with { type: 
 import starryNightStyleLight from "@wooorm/starry-night/style/light" with { type: "text" };
 import starryNightStyleDark from "@wooorm/starry-night/style/dark" with { type: "text" };
 
+// Initialize oniguruma manually, prevent starry night doing wrong stuff in compiled executable
+import oniguruma from "vscode-oniguruma";
+import { readFileSync } from "node:fs";
+// @ts-expect-error no typings for now
+import onigurumaWasmPath from "vscode-oniguruma/release/onig.wasm" with { type: "file" };
+oniguruma.loadWASM(readFileSync(onigurumaWasmPath));
+
 export async function markdownToHtml(markdown: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
