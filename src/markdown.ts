@@ -29,8 +29,11 @@ export async function markdownToHtml(markdown: string): Promise<string> {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
 <style>
+body {
+  margin: 0;
+}
 .container {
-  width: 100%
+  width: 100%;
   margin: 0 auto;
   padding: 1.25rem;
 }
@@ -60,13 +63,21 @@ export async function markdownToHtml(markdown: string): Promise<string> {
     max-width:1536px;
   }
 }
-${markdownStyle}
+@layer components {
+  ${markdownStyle}
+}
 ${katexStyle.replace(/url\(fonts\//g, 'url(https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/fonts/')}
 ${starryNightStyleCore}
 @media (prefers-color-scheme: light) {
+body {
+  background: #ffffff;
+}
 ${starryNightStyleLight}
 }
 @media (prefers-color-scheme: dark) {
+body {
+  background: #0d1117;
+}
 ${starryNightStyleDark}
 }
 </style>

@@ -1066,7 +1066,8 @@ const app = new Elysia()
           await htmlFile.write(new TextEncoder().encode(html));
           const url = await htmlFile.presign();
           return `HTML 渲染 ${url} \n\n ${text}`;
-        } catch {
+        } catch (e) {
+          console.error(e);
           return `HTML 渲染失败 \n\n ${text}`;
         }
       }
