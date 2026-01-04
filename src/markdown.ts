@@ -20,6 +20,18 @@ import { readFileSync } from "node:fs";
 import onigurumaWasmPath from "vscode-oniguruma/release/onig.wasm" with { type: "file" };
 oniguruma.loadWASM(readFileSync(onigurumaWasmPath));
 
+// const safeRehypeStarryNight: typeof rehypeStarryNight = (options) => {
+//   const plugin = rehypeStarryNight(options);
+//   return async (root, file) => {
+//     try {
+//       return plugin(root, file);
+//     } catch (e) {
+//       console.error("rehype-starry-night error:", e);
+//       return root;
+//     }
+//   }
+// }
+
 export async function markdownToHtml(markdown: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
@@ -28,7 +40,7 @@ export async function markdownToHtml(markdown: string): Promise<string> {
     .use(remarkRehype)
     .use(rehypeSanitize)
     .use(rehypeKatex)
-    .use(rehypeStarryNight)
+    .use(rehypeStarryNight, { getOnigurumaUrlFs: () => new URL(onigurumaWasmPath, import.meta.url) })
     .use(rehypeStringify)
     .process(markdown);
   return `<!DOCTYPE html>
