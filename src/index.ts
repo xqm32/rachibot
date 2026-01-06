@@ -1006,7 +1006,7 @@ const app = new Elysia()
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
 
       for (const tag of tags) {
-        if ([""].includes(tag)) continue;
+        if (["", "memo"].includes(tag)) continue;
         const value = await redis.get(`key:#${tag}`);
         if (!value) throw status(404, `key #${tag} not found`);
         messages.unshift({ role: "system", content: value });
@@ -1076,7 +1076,7 @@ const app = new Elysia()
       });
       const memo = (await memoResponse.json()) as { name: string };
 
-      if (text.length > 137)
+      if (tags.has("memo"))
         return [`📝 https://memos.xqm32.org/${memo.name}`, text].join("\n\n");
 
       return text;
