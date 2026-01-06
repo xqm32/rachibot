@@ -884,6 +884,20 @@ const app = new Elysia()
                   data: link,
                   mediaType: "application/pdf",
                 } as FilePart;
+              // memos.xqm32.org/memos
+              else if (
+                link.hostname === "memos.xqm32.org" &&
+                link.pathname.startsWith("/memos/")
+              ) {
+                link.pathname = `/api/v1${link.pathname}`;
+                const response = await fetch(link, {
+                  headers: {
+                    Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
+                  },
+                });
+                const memo = (await response.json()) as { content: string };
+                return { type: "text", text: memo.content } as TextPart;
+              }
 
               const response = await fetch(link, requestInit);
 
