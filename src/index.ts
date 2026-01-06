@@ -133,7 +133,7 @@ const app = new Elysia()
       let name = "";
       // /[name]
       if (msg.startsWith("/")) {
-        const match = msg.match(/\/([^\s#<>:]*)\s*(.*)/s);
+        const match = msg.match(/\/([^\s#<>]*)\s*(.*)/s);
         if (!match) throw status(400, "invalid / command");
         [, name, msg] = match;
       }
@@ -143,7 +143,7 @@ const app = new Elysia()
       const labels = new Map<string, string[] | null>();
       // #<tags>
       while (msg.startsWith("#")) {
-        const match = msg.match(/#([^\s<>:]+)\s*(.*)/s);
+        const match = msg.match(/#([^\s<>]*)\s*(.*)/s);
         if (!match) throw status(400, "invalid # command");
         [, , msg] = match;
         match[1].split("#").forEach((tag) => {
@@ -1005,14 +1005,8 @@ const app = new Elysia()
       // clear
       if (msg === "clear") return await redis.del(`context:${qq}:${group}`);
 
-      // : [msg]
-      if (msg.startsWith(":")) {
-        const match = msg.match(/:\s*(.*)/s);
-        if (!match) throw status(400, "invalid : command");
-        [, msg] = match;
-      }
-
       for (const tag of tags) {
+        if ([""].includes(tag)) continue;
         const value = await redis.get(`key:#${tag}`);
         if (!value) throw status(404, `key #${tag} not found`);
         messages.unshift({ role: "system", content: value });
@@ -1033,8 +1027,7 @@ const app = new Elysia()
       if (msg.length > 0) content.push({ type: "text", text: msg });
       if (content.length > 0) messages.push({ role: "user", content });
 
-      if (!messages.some((m) => m.role === "user"))
-        return chain.map((v) => `/${v}`).join(" -> ");
+      if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
       const model = openrouter(name);
       const { text, files, usage, response } = await generateText({
