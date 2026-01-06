@@ -255,6 +255,31 @@ const app = new Elysia()
         if (!value) throw status(404, `key ${key} not found`);
         return value;
       }
+      // [ref]
+      // memo [msg]
+      else if (msg.startsWith("memo")) {
+        let content;
+        if (ref) content = ref;
+        else {
+          const match = msg.match(/memo\s+(.+)/s);
+          if (!match) throw status(400, "invalid memo command");
+          [, content] = match;
+        }
+        const memoResponse = await fetch(
+          "https://memos.xqm32.org/api/v1/memos",
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+            body: JSON.stringify({
+              state: "NORMAL",
+              content,
+              visibility: "PUBLIC",
+            }),
+          }
+        );
+        const memo = (await memoResponse.json()) as { name: string };
+        return `https://memos.xqm32.org/${memo.name}`;
+      }
       // echo [msg]
       else if (msg.startsWith("echo")) {
         // #image
