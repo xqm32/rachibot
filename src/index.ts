@@ -1058,6 +1058,20 @@ const app = new Elysia()
         return images.join("\n");
       }
 
+      const memoResponse = await fetch("https://memos.xqm32.org/api/v1/memos", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+        body: JSON.stringify({
+          state: "NORMAL",
+          content: text,
+          visibility: "PUBLIC",
+        }),
+      });
+      const memo = (await memoResponse.json()) as { name: string };
+
+      if (text.length > 137)
+        return [`📝 https://memos.xqm32.org/${memo.name}`, text].join("\n\n");
+
       return text;
     },
     {
