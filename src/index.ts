@@ -1134,6 +1134,44 @@ const app = new Elysia()
   })
   .post(`/${process.env.BOT_TOKEN}`, (context) =>
     webhookCallback(bot, "elysia")(context)
+  )
+  .post(
+    "/memos",
+    ({ body }) => {
+      const { creator, memo } = body;
+      const { name, content } = memo;
+      if (content.startsWith("/"))
+        (async () => {
+          const request = new Request("http://localhost/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              qq: creator,
+              msg: content.slice("/".length),
+            }),
+          });
+          const response = await app.handle(request);
+          const text = await response.text();
+          await fetch(`https://memos.xqm32.org/api/v1/${name}/comments`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+            body: JSON.stringify({
+              state: "NORMAL",
+              content: text,
+              visibility: "PUBLIC",
+            }),
+          });
+        })();
+    },
+    {
+      body: t.Object({
+        creator: t.String(),
+        memo: t.Object({
+          name: t.String(),
+          content: t.String(),
+        }),
+      }),
+    }
   );
 
 export default app;
