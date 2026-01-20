@@ -55,7 +55,7 @@ bot.command(["7s", "card"], async (ctx) => {
       let version, authorName;
       if (process.env.CER) {
         const versionResponse = await fetch(
-          "https://beta.play.piovium.org/api/version"
+          "https://beta.play.piovium.org/api/version",
         );
         const { currentGameVersion } = (await versionResponse.json()) as {
           currentGameVersion: string;
@@ -84,7 +84,7 @@ bot.command(["7s", "card"], async (ctx) => {
             language: ctx.hasCommand("7s") ? "CHS" : "EN",
             displayId: false,
           }),
-        }
+        },
       );
       const { url } = (await resposne.json()) as { url: string };
       await ctx.replyWithPhoto(new InputFile(await fetch(url)));
@@ -203,7 +203,7 @@ const app = new Elysia()
             value,
             updatedAt: dayjs(),
             updatedBy: qq,
-          })
+          }),
         );
         await redis.ltrim(`key:${key}:history`, -42, -1);
         return `${key}: ${value}`;
@@ -235,7 +235,7 @@ const app = new Elysia()
                 .tz("Asia/Shanghai")
                 .format("YYYY-MM-DD HH:mm:ss")}`,
               `✍️ ${updatedBy}`,
-            ].join("\n")
+            ].join("\n"),
           )
           .join("\n=====\n");
       }
@@ -275,7 +275,7 @@ const app = new Elysia()
               content,
               visibility: "PUBLIC",
             }),
-          }
+          },
         );
         const memo = (await memoResponse.json()) as { name: string };
         return `https://memos.xqm32.org/${memo.name}`;
@@ -328,7 +328,7 @@ const app = new Elysia()
               Accept: "application/json",
             },
             body: JSON.stringify(body),
-          }
+          },
         );
         const text = await response.text();
 
@@ -389,7 +389,7 @@ const app = new Elysia()
         const [main, beta] = await Promise.all([
           fetch("https://play.piovium.org/api/rooms").then((r) => r.json()),
           fetch("https://beta.play.piovium.org/api/rooms").then((r) =>
-            r.json()
+            r.json(),
           ),
         ]);
 
@@ -590,7 +590,7 @@ const app = new Elysia()
       else if (["来点儿牌组", "来点牌组", "牌组", "decks", "d"].includes(msg)) {
         const response = await fetch(
           "https://api-takumi.mihoyo.com/event/cardsquare/index",
-          { method: "POST" }
+          { method: "POST" },
         );
         const { data } = (await response.json()) as { data: unknown };
 
@@ -608,7 +608,7 @@ const app = new Elysia()
               `🎴 ${deck.title}`,
               `🎮 ${deck.nickname} 🏷️ ${deck.tags.join(", ")}`,
               `🃏 ${deck.card_code}`,
-            ].join("\n")
+            ].join("\n"),
           )
           .join("\n\n");
       }
@@ -663,7 +663,7 @@ const app = new Elysia()
               authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
               "X-GitHub-Api-Version": "2022-11-28",
             },
-          }
+          },
         )) as unknown as { data: string };
         content.push({ type: "text", text: data });
       }
@@ -681,7 +681,7 @@ const app = new Elysia()
         else etime = dayjs.tz(end, "Asia/Shanghai");
 
         const response = await fetch(
-          "https://lpl.qq.com/web201612/data/LOL_MATCH2_GAME_LIST_BRIEF.js"
+          "https://lpl.qq.com/web201612/data/LOL_MATCH2_GAME_LIST_BRIEF.js",
         );
         const text = await response.text();
         const {
@@ -726,7 +726,7 @@ const app = new Elysia()
         }
         const fetchMatch = async (game: Game) => {
           const response = await fetch(
-            `https://lpl.qq.com/web201612/data/LOL_MATCH2_MATCH_HOMEPAGE_BMATCH_LIST_${game.GameId}.js`
+            `https://lpl.qq.com/web201612/data/LOL_MATCH2_MATCH_HOMEPAGE_BMATCH_LIST_${game.GameId}.js`,
           );
           if (!response.ok) return [];
           const { msg } = (await response.json()) as { msg: Match[] };
@@ -781,11 +781,11 @@ const app = new Elysia()
         // #news
         if (tags.has("news")) {
           const response = await fetch(
-            `https://lpl.qq.com/web201612/data/LOL_MATCH_DETAIL_${last.bMatchId}.js`
+            `https://lpl.qq.com/web201612/data/LOL_MATCH_DETAIL_${last.bMatchId}.js`,
           );
           const text = await response.text();
           const { sExt4 } = JSON.parse(
-            text.slice("var dataObj=".length, -";".length)
+            text.slice("var dataObj=".length, -";".length),
           ) as { sExt4: string | null };
           if (!sExt4) throw status(404, "news not found");
           const news = JSON.parse(sExt4) as { title: string }[];
@@ -796,7 +796,7 @@ const app = new Elysia()
         if (!authorization) throw status(403, "lol authorization not set");
         const fetchDetail = async (match: Match) => {
           const url = new URL(
-            "https://open.tjstats.com/match-auth-app/open/v1/compound/matchDetail"
+            "https://open.tjstats.com/match-auth-app/open/v1/compound/matchDetail",
           );
           url.searchParams.append("matchId", match.bMatchId);
           const response = await fetch(url, { headers: { authorization } });
@@ -870,7 +870,7 @@ const app = new Elysia()
         let text = await redis.get(`key:$smart-questions`);
         if (!text) {
           const response = await fetch(
-            "http://www.catb.org/~esr/faqs/smart-questions.html"
+            "http://www.catb.org/~esr/faqs/smart-questions.html",
           );
           text = await response.text();
           await redis.set(`key:$smart-questions`, text);
@@ -937,7 +937,7 @@ const app = new Elysia()
 
               const featureCheerio = await redis.hget(
                 `feature:${qq}`,
-                "cheerio"
+                "cheerio",
               );
               // mp.weixin.qq.com
               if (link.hostname === "mp.weixin.qq.com")
@@ -950,7 +950,7 @@ const app = new Elysia()
 
               text = `<resource uri="${link}">\n${text}\n</resource>`;
               return { type: "text", text } as TextPart;
-            })
+            }),
         );
         tags.delete("cheerio");
         content.push(...parts);
@@ -1063,13 +1063,13 @@ const app = new Elysia()
       const { modelId } = response;
       await redis.set(
         `usage:${qq}:${group}:last`,
-        JSON.stringify({ modelId, ...usage })
+        JSON.stringify({ modelId, ...usage }),
       );
       await redis.rpush(
         `context:${qq}:${group}`,
         JSON.stringify(
-          messages.concat(response.messages).filter((m) => m.role !== "system")
-        )
+          messages.concat(response.messages).filter((m) => m.role !== "system"),
+        ),
       );
       await redis.ltrim(`context:${qq}:${group}`, -42, -1);
       await redis.expire(`context:${qq}:${group}`, 3600);
@@ -1083,7 +1083,7 @@ const app = new Elysia()
             const imageFile = s3.file(`${randomUUIDv7()}.${extension}`);
             await imageFile.write(image.uint8Array);
             return imageFile.presign();
-          })
+          }),
       );
       if (images.length > 0) {
         set.headers["X-Images"] = images.length;
@@ -1114,7 +1114,7 @@ const app = new Elysia()
         ref: t.Optional(t.String()),
         image: t.Optional(t.String()),
       }),
-    }
+    },
   )
   .post("/api/v1/chat/completions", async ({ request }) => {
     const enabled = await redis.get("key:$/api/v1/chat/completions");
@@ -1128,12 +1128,12 @@ const app = new Elysia()
           "Content-Type": "application/json",
         },
         body: request.body,
-      }
+      },
     );
     return new Response(response.body);
   })
   .post(`/${process.env.BOT_TOKEN}`, (context) =>
-    webhookCallback(bot, "elysia")(context)
+    webhookCallback(bot, "elysia")(context),
   )
   .post(
     "/memos",
@@ -1171,7 +1171,7 @@ const app = new Elysia()
           content: t.String(),
         }),
       }),
-    }
+    },
   );
 
 export default app;
