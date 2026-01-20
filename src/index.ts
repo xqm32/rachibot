@@ -158,15 +158,20 @@ const app = new Elysia()
           }
         });
       }
+
+      // #
+      if (tags.has("")) {
+        // not a command
+      }
       // > [msg]
-      if (msg.startsWith(">")) {
+      else if (msg.startsWith(">")) {
         const match = msg.match(/>\s*(.+)/s);
         if (!match) msg = "context";
         else [, msg] = match;
         tags.add("context");
       }
       // < len > [msg]
-      if (msg.startsWith("<")) {
+      else if (msg.startsWith("<")) {
         const match = msg.match(/<\s*(\d+)\s*>\s*(.*)/s);
         if (!match) throw status(400, "invalid <> command");
         [, , msg] = match;
@@ -175,16 +180,15 @@ const app = new Elysia()
         labels.set("context", [len]);
       }
       // tags
-      if (msg === "tags") return Array.from(tags).join(", ");
+      else if (msg === "tags") return Array.from(tags).join(", ");
       // labels
-      if (msg === "labels")
+      else if (msg === "labels")
         return Array.from(labels.entries())
           .map(([k, v]) => (v ? `${k}: ${v.join(", ")}` : k))
           .join("\n");
-
       // [ref]
       // set <key> [value]
-      if (msg.startsWith("set")) {
+      else if (msg.startsWith("set")) {
         let key, value;
         if (ref) {
           const match = msg.match(/set\s+(\S+)/s);
@@ -348,8 +352,12 @@ const app = new Elysia()
         return stdout.map((e) => e.text).join("\n");
       }
 
+      // #
+      if (tags.has("")) {
+        // not a command
+      }
       // 42
-      if (msg.length >= 42) {
+      else if (msg.length >= 42) {
         // not a command
       }
       // ping
