@@ -1182,4 +1182,6 @@ const app = new Elysia()
     },
   );
 
+if (import.meta.main) app.listen(process.env.PORT ?? 3000);
+
 export default app;
