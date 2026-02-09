@@ -453,7 +453,8 @@ const app = new Elysia()
       else if (msg.startsWith("resolve")) {
         const match = msg.match(/resolve\s*(\S+)/s);
         if (!match) throw status(400, "invalid resolve command");
-        const [, name] = match;
+        let [, name] = match;
+        name = URL.parse(name)?.hostname ?? name;
 
         const url = new URL("https://dns.google/resolve");
         url.searchParams.append("name", name);
