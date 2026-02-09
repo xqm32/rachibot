@@ -1,5 +1,6 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { Monty } from "@pydantic/monty";
 import {
   FilePart,
   generateText,
@@ -351,6 +352,8 @@ const app = new Elysia()
         }
         return stdout.map((e) => e.text).join("\n");
       }
+      // /py
+      else if (name === "py") return new Monty(msg).run();
 
       // #
       if (tags.has("")) {
