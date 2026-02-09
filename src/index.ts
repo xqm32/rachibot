@@ -1,6 +1,6 @@
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { Monty } from "@pydantic/monty";
+import { Monty, runMontyAsync } from "@pydantic/monty";
 import {
   FilePart,
   generateText,
@@ -353,7 +353,15 @@ const app = new Elysia()
         return stdout.map((e) => e.text).join("\n");
       }
       // /py
-      else if (name === "py") return new Monty(ref ?? msg).run();
+      else if (name === "py")
+        return await runMontyAsync(new Monty(ref ?? msg), {
+          limits: {
+            maxAllocations: 10000,
+            maxDurationSecs: 5,
+            maxMemory: 1024 * 1024,
+            maxRecursionDepth: 100,
+          },
+        });
 
       // #
       if (tags.has("")) {
