@@ -353,7 +353,7 @@ const app = new Elysia()
         return stdout.map((e) => e.text).join("\n");
       }
       // /py
-      else if (name === "py") return new Monty(msg).run();
+      else if (name === "py") return new Monty(ref ?? msg).run();
 
       // #
       if (tags.has("")) {
