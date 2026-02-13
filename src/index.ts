@@ -464,7 +464,36 @@ const app = new Elysia()
         }
 
         const response = await fetch(`http://ip-api.com/json/${host}`);
-        return response.text();
+
+        interface IP {
+          as: string;
+          city: string;
+          country: string;
+          countryCode: string;
+          isp: string;
+          lat: number;
+          lon: number;
+          org: string;
+          query: string;
+          region: string;
+          regionName: string;
+          status: string;
+          timezone: string;
+          zip: string;
+          message?: string;
+        }
+        const ip = (await response.json()) as IP;
+        if (ip.status !== "success")
+          throw status(400, ip.message ?? "ip lookup failed");
+
+        return [
+          `🧭 ${ip.query}`,
+          `🌍 ${ip.country} (${ip.countryCode}) / ${ip.regionName} (${ip.region}) / ${ip.city} ${ip.zip}`,
+          `🕰️ ${ip.timezone}`,
+          `📡 ${ip.isp} | ${ip.org}`,
+          `🪪 ${ip.as}`,
+          `📍 https://maps.google.com/?q=${ip.lat},${ip.lon}`,
+        ].join("\n");
       }
       // resolve <name>
       else if (msg.startsWith("resolve")) {
