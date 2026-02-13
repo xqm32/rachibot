@@ -452,13 +452,19 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid ip command");
         const [, host] = match;
         if (!net.isIP(host)) throw status(400, "invalid ip address");
-        const url = new URL("https://ip.zxinc.org/api.php");
-        url.searchParams.append("type", "json");
-        url.searchParams.append("ip", host);
-        const response = await fetch(url);
-        const { data } = (await response.json()) as { data: unknown };
-        const { location } = data as { location: string };
-        return location;
+
+        if (tags.has("z")) {
+          const url = new URL("https://ip.zxinc.org/api.php");
+          url.searchParams.append("type", "json");
+          url.searchParams.append("ip", host);
+          const response = await fetch(url);
+          const { data } = (await response.json()) as { data: unknown };
+          const { location } = data as { location: string };
+          return location;
+        }
+
+        const response = await fetch(`http://ip-api.com/json/${host}`);
+        return response.text();
       }
       // resolve <name>
       else if (msg.startsWith("resolve")) {
