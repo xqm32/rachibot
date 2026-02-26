@@ -1,3 +1,4 @@
+import { xai } from "@ai-sdk/xai";
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Monty, runMontyAsync } from "@pydantic/monty";
@@ -1109,7 +1110,12 @@ const app = new Elysia()
 
       if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const model = openrouter(name);
+      const model = (() => {
+        if (name.startsWith("grok/"))
+          return xai.responses(name.slice("grok/".length));
+        return openrouter(name);
+      })();
+
       const { text, files, usage, response } = await generateText({
         model,
         messages: context.concat(messages),
