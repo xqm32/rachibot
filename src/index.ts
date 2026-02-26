@@ -1116,6 +1116,11 @@ const app = new Elysia()
           return await generateText({
             model: xai.responses(name.slice("grok/".length)),
             messages: context.concat(messages),
+            tools: {
+              web_search: xai.tools.webSearch(),
+              x_search: xai.tools.xSearch(),
+              code_execution: xai.tools.codeExecution(),
+            },
           });
         else if (name.startsWith("image/")) {
           const { images, usage, responses } = await generateImage({
