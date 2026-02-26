@@ -4,6 +4,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Monty, runMontyAsync } from "@pydantic/monty";
 import {
   FilePart,
+  generateImage,
   generateText,
   ModelMessage,
   TextPart,
@@ -1110,17 +1111,32 @@ const app = new Elysia()
 
       if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const model = (() => {
+      const { text, files, usage, response } = await (async () => {
         if (name.startsWith("grok/"))
-          return xai.responses(name.slice("grok/".length));
-        return openrouter(name);
+          return await generateText({
+            model: xai.responses(name.slice("grok/".length)),
+            messages: context.concat(messages),
+          });
+        else if (name.startsWith("image/")) {
+          const { images, usage, responses } = await generateImage({
+            model: xai.image(name.slice("image/".length)),
+            prompt: ref ?? msg,
+          });
+          const [{ modelId }] = responses;
+          return {
+            text: name,
+            files: images,
+            usage,
+            response: { modelId, messages: [] },
+          };
+        }
+        return await generateText({
+          model: openrouter(name),
+          messages: context.concat(messages),
+          providerOptions: { openrouter: { user: qq } },
+        });
       })();
 
-      const { text, files, usage, response } = await generateText({
-        model,
-        messages: context.concat(messages),
-        providerOptions: { openrouter: { user: qq } },
-      });
       const { modelId } = response;
       await redis.set(
         `usage:${qq}:${group}:last`,
