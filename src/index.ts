@@ -1123,8 +1123,45 @@ const app = new Elysia()
             },
           });
         else if (name.startsWith("image/")) {
+          name = name.slice("image/".length);
+
+          if (image) {
+            const response = await fetch("https://api.x.ai/v1/images/edits", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: name,
+                prompt: ref ?? msg,
+                image: { url: image, type: "image_url" },
+              }),
+            });
+            const {
+              data: [{ url }],
+            } = (await response.json()) as {
+              data: { url: string }[];
+            };
+
+            const imageResponse = await fetch(url);
+            if (!imageResponse.ok || !imageResponse.headers.has("Content-Type"))
+              throw status(500, "failed to fetch edited image");
+            const mediaType = imageResponse.headers.get("Content-Type")!;
+            const uint8Array = new Uint8Array(
+              await imageResponse.arrayBuffer(),
+            );
+
+            return {
+              text: name,
+              files: [{ mediaType, uint8Array }],
+              usage: {},
+              response: { modelId: name, messages: [] },
+            };
+          }
+
           const { images, usage, responses } = await generateImage({
-            model: xai.image(name.slice("image/".length)),
+            model: xai.image(name),
             prompt: ref ?? msg,
           });
           const [{ modelId }] = responses;
