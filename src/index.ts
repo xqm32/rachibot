@@ -1125,7 +1125,7 @@ const app = new Elysia()
         else if (name.startsWith("image/")) {
           name = name.slice("image/".length);
 
-          if (image) {
+          if (image && URL.parse(image)) {
             const response = await fetch("https://api.x.ai/v1/images/edits", {
               method: "POST",
               headers: {
