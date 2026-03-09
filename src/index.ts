@@ -699,8 +699,12 @@ const app = new Elysia()
       const content: UserContent = [];
       const messages: ModelMessage[] = [];
 
+      // #
+      if (tags.has("")) {
+        // not a command
+      }
       // help
-      if (msg.startsWith("help")) {
+      else if (msg.startsWith("help")) {
         const match = msg.match(/help\s*(.*)/s);
         if (!match) throw status(400, "invalid help command");
         [, msg] = match;
