@@ -940,11 +940,10 @@ const app = new Elysia()
       const links: Set<string> = new Set();
       ref?.match(regex)?.forEach((link) => links.add(link));
       msg.match(regex)?.forEach((link) => links.add(link));
-      // #nolinks
-      if (tags.has("nolinks")) tags.delete("nolinks");
-      else if (links.size > 0) {
-        // #links
-        if (tags.has("links")) return Array.from(links).join("\n");
+      // #links
+      if (tags.has("links") && links.size > 0) {
+        // #raw
+        if (tags.has("raw")) return Array.from(links).join("\n");
 
         const requestInit: RequestInit = {};
         const userAgent = await redis.get("key:$user-agent");
