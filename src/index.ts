@@ -1260,7 +1260,8 @@ const app = new Elysia()
   .post(
     "/memos",
     ({ body }) => {
-      const { creator, memo } = body;
+      const { creator, memo, activityType } = body;
+      if (activityType !== "memos.memo.created") return;
       const { name, content } = memo;
       if (content.startsWith("/"))
         (async () => {
@@ -1292,6 +1293,7 @@ const app = new Elysia()
           name: t.String(),
           content: t.String(),
         }),
+        activityType: t.String(),
       }),
     },
   );
