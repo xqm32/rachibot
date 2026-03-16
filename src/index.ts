@@ -711,7 +711,7 @@ const app = new Elysia()
           },
         });
         const memo = (await response.json()) as { content: string };
-        return memo.content;
+        return memo.content.trim();
       }
 
       const content: UserContent = [];
