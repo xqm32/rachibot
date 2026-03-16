@@ -695,6 +695,24 @@ const app = new Elysia()
           `🤑 $${(total_credits - total_usage).toFixed(2)}`,
         ].join("\n");
       }
+      // m
+      else if (ref && msg === "m") {
+        const link = URL.parse(ref);
+        if (
+          !link ||
+          link.hostname !== "memos.xqm32.org" ||
+          !link.pathname.startsWith("/memos/")
+        )
+          throw status(400, "invalid m command");
+        link.pathname = `/api/v1${link.pathname}`;
+        const response = await fetch(link, {
+          headers: {
+            Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
+          },
+        });
+        const memo = (await response.json()) as { content: string };
+        return memo.content;
+      }
 
       const content: UserContent = [];
       const messages: ModelMessage[] = [];
