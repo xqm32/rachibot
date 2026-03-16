@@ -10,7 +10,7 @@ import {
   TextPart,
   UserContent,
 } from "ai";
-import { randomUUIDv7, redis, s3, stripANSI } from "bun";
+import { randomUUIDv7, redis, s3, sleep, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -1114,7 +1114,14 @@ const app = new Elysia()
 
       if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const { text, files, usage, response } = await (async () => {
+      const memoResponse = await fetch("https://memos.xqm32.org/api/v1/memos", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+        body: JSON.stringify({ state: "NORMAL", visibility: "PUBLIC" }),
+      });
+      const memo = (await memoResponse.json()) as { name: string };
+
+      const generate = async () => {
         if (name.startsWith("grok/"))
           return await generateText({
             model: xai.responses(name.slice("grok/".length)),
@@ -1180,51 +1187,59 @@ const app = new Elysia()
           messages: context.concat(messages),
           providerOptions: { openrouter: { user: qq } },
         });
-      })();
+      };
 
-      const { modelId } = response;
-      await redis.set(
-        `usage:${qq}:${group}:last`,
-        JSON.stringify({ modelId, ...usage }),
-      );
-      await redis.rpush(
-        `context:${qq}:${group}`,
-        JSON.stringify(
-          messages.concat(response.messages).filter((m) => m.role !== "system"),
-        ),
-      );
-      await redis.ltrim(`context:${qq}:${group}`, -42, -1);
-      await redis.expire(`context:${qq}:${group}`, 3600);
+      const respond = async () => {
+        const { text, files, usage, response } = await generate();
 
-      const images = await Promise.all(
-        files
-          .slice(0, 1)
-          .filter((file) => file.mediaType.startsWith("image/"))
-          .map(async (image) => {
-            const extension = image.mediaType.split("/").at(-1);
-            const imageFile = s3.file(`${randomUUIDv7()}.${extension}`);
-            await imageFile.write(image.uint8Array);
-            return imageFile.presign();
-          }),
-      );
-      if (images.length > 0) {
-        set.headers["X-Images"] = images.length;
-        return images.join("\n");
-      }
+        const { modelId } = response;
+        await redis.set(
+          `usage:${qq}:${group}:last`,
+          JSON.stringify({ modelId, ...usage }),
+        );
+        await redis.rpush(
+          `context:${qq}:${group}`,
+          JSON.stringify(
+            messages
+              .concat(response.messages)
+              .filter((m) => m.role !== "system"),
+          ),
+        );
+        await redis.ltrim(`context:${qq}:${group}`, -42, -1);
+        await redis.expire(`context:${qq}:${group}`, 3600);
 
-      const memoResponse = await fetch("https://memos.xqm32.org/api/v1/memos", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
-        body: JSON.stringify({
-          state: "NORMAL",
-          content: text,
-          visibility: "PUBLIC",
-        }),
-      });
-      const memo = (await memoResponse.json()) as { name: string };
+        const images = await Promise.all(
+          files
+            .slice(0, 1)
+            .filter((file) => file.mediaType.startsWith("image/"))
+            .map(async (image) => {
+              const extension = image.mediaType.split("/").at(-1);
+              const imageFile = s3.file(`${randomUUIDv7()}.${extension}`);
+              await imageFile.write(image.uint8Array);
+              return imageFile.presign();
+            }),
+        );
+        if (images.length > 0) {
+          set.headers["X-Images"] = images.length;
+          return images.join("\n");
+        }
 
-      if (tags.has("memo"))
-        return [`📝 https://memos.xqm32.org/${memo.name}`, text].join("\n\n");
+        await fetch(`https://memos.xqm32.org/api/v1/${memo.name}`, {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+          body: JSON.stringify({ content: text }),
+        });
+
+        if (tags.has("memo"))
+          return [`📝 https://memos.xqm32.org/${memo.name}`, text].join("\n\n");
+
+        return text;
+      };
+
+      const text = await Promise.race([
+        respond(),
+        sleep(60000).then(() => `📝 https://memos.xqm32.org/${memo.name}`),
+      ]);
 
       return text;
     },
