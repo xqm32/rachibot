@@ -10,7 +10,7 @@ import {
   TextPart,
   UserContent,
 } from "ai";
-import { randomUUIDv7, redis, s3, sleep, stripANSI } from "bun";
+import { $, randomUUIDv7, redis, s3, sleep, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -1180,6 +1180,21 @@ const app = new Elysia()
             files: images,
             usage,
             response: { modelId, messages: [] },
+          };
+        } else if (name.startsWith("opencode/")) {
+          const agent = name.slice("opencode/".length);
+          if (!["plan"].includes(agent)) throw status(403, "agent not allowed");
+          const attach = process.env.OPENCODE_URL;
+          const password = process.env.OPENCODE_SERVER_PASSWORD;
+          const text =
+            await $`opencode run --agent ${agent} --attach ${attach} run ${ref ?? msg}`
+              .env({ OPENCODE_SERVER_PASSWORD: password })
+              .text();
+          return {
+            text,
+            files: [],
+            usage: {},
+            response: { modelId: name, messages: [] },
           };
         }
         return await generateText({
