@@ -1117,7 +1117,11 @@ const app = new Elysia()
       const memoResponse = await fetch("https://memos.xqm32.org/api/v1/memos", {
         method: "POST",
         headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
-        body: JSON.stringify({ state: "NORMAL", visibility: "PUBLIC" }),
+        body: JSON.stringify({
+          state: "NORMAL",
+          content: chain.map((v) => `/${v}`).join(" -> "),
+          visibility: "PUBLIC",
+        }),
       });
       const memo = (await memoResponse.json()) as { name: string };
 
@@ -1253,7 +1257,7 @@ const app = new Elysia()
 
       const text = await Promise.race([
         respond(),
-        sleep(60000).then(() => `📝 https://memos.xqm32.org/${memo.name}`),
+        sleep(60000).then(() => `https://memos.xqm32.org/${memo.name}`),
       ]);
 
       return text;
