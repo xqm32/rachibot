@@ -1137,7 +1137,7 @@ const app = new Elysia()
         headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
         body: JSON.stringify({
           state: "NORMAL",
-          content: chain.map((v) => `/${v}`).join(" -> "),
+          content: "generating...",
           visibility: "PUBLIC",
         }),
       });
