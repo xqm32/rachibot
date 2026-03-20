@@ -705,13 +705,23 @@ const app = new Elysia()
         )
           throw status(400, "invalid m command");
         link.pathname = `/api/v1${link.pathname}`;
-        const response = await fetch(link, {
-          headers: {
-            Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
-          },
-        });
-        const memo = (await response.json()) as { content: string };
-        return memo.content.trim();
+
+        let content;
+
+        const start = dayjs();
+        while (start.diff() > -60000) {
+          const response = await fetch(link, {
+            headers: {
+              Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
+            },
+          });
+          const memo = (await response.json()) as { content: string };
+          content = memo.content.trim();
+          if (tags.has("now") || content !== "generating...") break;
+          await sleep(3000);
+        }
+
+        return content;
       }
 
       const content: UserContent = [];
