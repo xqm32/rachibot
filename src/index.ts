@@ -709,7 +709,7 @@ const app = new Elysia()
         let content;
 
         const start = dayjs();
-        while (start.diff() > -60000) {
+        while (start.diff() > -90000) {
           const response = await fetch(link, {
             headers: {
               Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
@@ -1285,7 +1285,7 @@ const app = new Elysia()
 
       const text = await Promise.race([
         respond(),
-        sleep(60000).then(() => `https://memos.xqm32.org/${memo.name}`),
+        sleep(90000).then(() => `https://memos.xqm32.org/${memo.name}`),
       ]);
 
       return text;
