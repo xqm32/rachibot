@@ -1224,7 +1224,7 @@ const app = new Elysia()
               .env({ OPENCODE_SERVER_PASSWORD: password })
               .text();
           return {
-            text,
+            text: stripANSI(text),
             files: [],
             usage: {},
             response: { modelId: name, messages: [] },
