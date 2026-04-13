@@ -277,25 +277,36 @@ const app = new Elysia()
         const [, env] = match;
 
         const now = dayjs.utc();
-        const today = await logsS3.list({
-          prefix: `${env}/logs/${now.format("YYYY-MM-DD")}/`,
-        });
-        const yesterday = await logsS3.list({
-          prefix: `${env}/logs/${now.subtract(1, "day").format("YYYY-MM-DD")}/`,
-        });
+        const [today, yesterday] = await Promise.all([
+          logsS3.list({ prefix: `${env}/logs/${now.format("YYYY-MM-DD")}/` }),
+          logsS3.list({
+            prefix: `${env}/logs/${now.subtract(1, "day").format("YYYY-MM-DD")}/`,
+          }),
+        ]);
         const logs = (today.contents ?? []).concat(yesterday.contents ?? []);
 
         if (logs.length === 0) throw status(404, `logs ${env} not found`);
-        return logs
+        const recent = logs
           .filter((log) => log.lastModified)
           .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!))
-          .map(({ key, lastModified }) =>
-            [
-              key,
-              `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")}`,
-            ].join("\n"),
-          )
-          .join("\n\n");
+          .slice(0, 5);
+
+        const format = async ({ key, lastModified }: (typeof recent)[number]) => {
+          const { m } = (await logsS3.file(key).json()) as {
+            m: {
+              roomId: number;
+              players: { name: string }[];
+            };
+          };
+          return [
+            key,
+            `${m.roomId} 👉 ${m.players.map((player) => player.name).join(" 🆚 ")}`,
+            `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")}`,
+          ].join("\n");
+        };
+
+        const results = await Promise.all(recent.map(format));
+        return results.join("\n\n");
       }
       // log <path>
       else if (msg.startsWith("log")) {
