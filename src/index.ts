@@ -10,7 +10,7 @@ import {
   TextPart,
   UserContent,
 } from "ai";
-import { $, randomUUIDv7, redis, s3, sleep, stripANSI } from "bun";
+import { $, randomUUIDv7, redis, s3, S3Client, sleep, stripANSI } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -22,6 +22,14 @@ import net from "net";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.guess();
+
+const logsS3 = new S3Client({
+  accessKeyId: process.env.LOGS_S3_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.LOGS_S3_SECRET_ACCESS_KEY!,
+  bucket: process.env.LOGS_S3_BUCKET!,
+  endpoint: process.env.LOGS_S3_ENDPOINT!,
+  region: process.env.LOGS_S3_REGION!,
+});
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -261,6 +269,33 @@ const app = new Elysia()
         }
         if (!value) throw status(404, `key ${key} not found`);
         return value;
+      }
+      // logs <env>
+      else if (msg.startsWith("logs")) {
+        const match = msg.match(/logs\s+(\S+)/s);
+        if (!match) throw status(400, "invalid logs command");
+        const [, env] = match;
+
+        const now = dayjs.utc();
+        const today = await logsS3.list({
+          prefix: `${env}/logs/${now.format("YYYY-MM-DD")}/`,
+        });
+        const yesterday = await logsS3.list({
+          prefix: `${env}/logs/${now.subtract(1, "day").format("YYYY-MM-DD")}/`,
+        });
+        const logs = (today.contents ?? []).concat(yesterday.contents ?? []);
+
+        if (logs.length === 0) throw status(404, `logs ${env} not found`);
+        return logs
+          .filter((log) => log.lastModified)
+          .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!))
+          .map(({ key, lastModified }) =>
+            [
+              key,
+              `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")}`,
+            ].join("\n"),
+          )
+          .join("\n\n");
       }
       // [ref]
       // memo [msg]
