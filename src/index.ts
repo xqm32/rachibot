@@ -291,7 +291,10 @@ const app = new Elysia()
           .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!))
           .slice(0, 5);
 
-        const format = async ({ key, lastModified }: (typeof recent)[number]) => {
+        const format = async ({
+          key,
+          lastModified,
+        }: (typeof recent)[number]) => {
           const { m } = (await logsS3.file(key).json()) as {
             m: {
               roomId: number;
@@ -770,7 +773,7 @@ const app = new Elysia()
           });
           const memo = (await response.json()) as { content: string };
           content = memo.content.trim();
-          if (tags.has("now") || content !== "generating...") break;
+          if (tags.has("now") || content !== "少女祈祷中...") break;
           await sleep(3000);
         }
 
@@ -1199,7 +1202,7 @@ const app = new Elysia()
         headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
         body: JSON.stringify({
           state: "NORMAL",
-          content: "generating...",
+          content: "少女祈祷中...",
           visibility: "PUBLIC",
         }),
       });
