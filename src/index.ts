@@ -297,6 +297,13 @@ const app = new Elysia()
           )
           .join("\n\n");
       }
+      // log <path>
+      else if (msg.startsWith("log")) {
+        const match = msg.match(/log\s+(\S+)/s);
+        if (!match) throw status(400, "invalid log command");
+        const [, path] = match;
+        return logsS3.file(path).presign();
+      }
       // [ref]
       // memo [msg]
       else if (msg.startsWith("memo")) {
