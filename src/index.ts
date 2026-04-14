@@ -294,6 +294,7 @@ const app = new Elysia()
         const format = async ({
           key,
           lastModified,
+          size,
         }: (typeof recent)[number]) => {
           const { m } = (await logsS3.file(key).json()) as {
             m: {
@@ -304,7 +305,7 @@ const app = new Elysia()
           return [
             key,
             `${m.roomId} 👉 ${m.players.map((player) => player.name).join(" 🆚 ")}`,
-            `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")}`,
+            `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")} (${((size ?? 0) / 1024).toFixed(2)} KiB)`,
           ].join("\n");
         };
 
