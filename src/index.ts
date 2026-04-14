@@ -291,6 +291,10 @@ const app = new Elysia()
           .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!))
           .slice(0, 5);
 
+        const keys = recent.map((log) => log.key);
+        await redis.set(`logs:${group}`, JSON.stringify(keys));
+        await redis.expire(`logs:${group}`, 3600);
+
         const format = async ({
           key,
           lastModified,
@@ -316,7 +320,12 @@ const app = new Elysia()
       else if (msg.startsWith("log")) {
         const match = msg.match(/log\s+(\S+)/s);
         if (!match) throw status(400, "invalid log command");
-        const [, path] = match;
+        let [, path] = match;
+        const value = await redis.get(`logs:${group}`);
+        if (value) {
+          const keys = JSON.parse(value) as string[];
+          path = keys.find((key) => key.includes(path)) ?? path;
+        }
         return logsS3.file(path).presign();
       }
       // [ref]
