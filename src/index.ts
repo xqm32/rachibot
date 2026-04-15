@@ -276,7 +276,8 @@ const app = new Elysia()
         if (!match) throw status(400, "invalid logs command");
         const [, env] = match;
 
-        const now = dayjs.utc();
+        const [when] = labels.get("when") ?? [];
+        const now = dayjs.utc(when);
         const [today, yesterday] = await Promise.all([
           logsS3.list({ prefix: `${env}/logs/${now.format("YYYY-MM-DD")}/` }),
           logsS3.list({
