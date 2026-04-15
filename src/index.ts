@@ -286,10 +286,10 @@ const app = new Elysia()
         const logs = (today.contents ?? []).concat(yesterday.contents ?? []);
 
         if (logs.length === 0) throw status(404, `logs ${env} not found`);
-        const recent = logs
+        let recent = logs
           .filter((log) => log.lastModified)
-          .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!))
-          .slice(0, 5);
+          .sort((a, b) => b.lastModified!.localeCompare(a.lastModified!));
+        if (!tags.has("all")) recent = recent.slice(0, 5);
 
         const keys = recent.map((log) => log.key);
         await redis.set(`logs:${group}`, JSON.stringify(keys));
