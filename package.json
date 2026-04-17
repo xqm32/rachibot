@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@ai-sdk/xai": "^3.0.82",
+    "@gi-tcg/core": "^0.19.1",
     "@octokit/request": "^10.0.8",
     "@openrouter/ai-sdk-provider": "^2.5.1",
     "@pydantic/monty": "^0.0.11",
