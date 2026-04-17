@@ -1336,6 +1336,18 @@ const app = new Elysia()
                   return text;
                 },
               }),
+              run_sandboxed_python: tool({
+                inputSchema: z.object({ code: z.string() }),
+                execute: ({ code }) =>
+                  runMontyAsync(new Monty(code), {
+                    limits: {
+                      maxAllocations: 10000,
+                      maxDurationSecs: 5,
+                      maxMemory: 64 * 1024 * 1024,
+                      maxRecursionDepth: 100,
+                    },
+                  }),
+              }),
             },
             providerOptions: { openrouter: { user: qq } },
           });
