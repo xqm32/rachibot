@@ -1,4 +1,6 @@
 import { xai } from "@ai-sdk/xai";
+import { deserializeGameStateLog } from "@gi-tcg/core";
+import getData from "@gi-tcg/data";
 import { request } from "@octokit/request";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Monty, runMontyAsync } from "@pydantic/monty";
@@ -427,7 +429,7 @@ const app = new Elysia()
           limits: {
             maxAllocations: 10000,
             maxDurationSecs: 5,
-            maxMemory: 1024 * 1024,
+            maxMemory: 64 * 1024 * 1024,
             maxRecursionDepth: 100,
           },
           inputs: { _: ref },
@@ -439,6 +441,16 @@ const app = new Elysia()
               const response = await fetch(url);
               const text = await response.text();
               return text;
+            },
+            async dgsl(arg) {
+              const url = URL.parse(arg as string);
+              if (!url || !["http:", "https:"].includes(url.protocol))
+                throw new Error("invalid url");
+              const response = await fetch(url);
+              const log = await response.json();
+              return JSON.stringify(
+                deserializeGameStateLog(getData(log.gv), log),
+              );
             },
           },
         });
