@@ -10,6 +10,8 @@ import {
   generateText,
   ModelMessage,
   TextPart,
+  tool,
+  ToolLoopAgent,
   UserContent,
 } from "ai";
 import { $, randomUUIDv7, redis, s3, S3Client, sleep, stripANSI } from "bun";
@@ -20,6 +22,7 @@ import utc from "dayjs/plugin/utc";
 import { Elysia, status, t } from "elysia";
 import { Bot, InputFile, webhookCallback } from "grammy";
 import net from "net";
+import z from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -1318,6 +1321,25 @@ const app = new Elysia()
             usage: {},
             response: { modelId: name, messages: [] },
           };
+        } else if (name.startsWith("agent/")) {
+          const agent = new ToolLoopAgent({
+            model: openrouter(name.slice("agent/".length)),
+            tools: {
+              fetch_text: tool({
+                inputSchema: z.object({ link: z.url() }),
+                execute: async ({ link }) => {
+                  const url = URL.parse(link);
+                  if (!url || !["http:", "https:"].includes(url.protocol))
+                    throw new Error("invalid url");
+                  const response = await fetch(url);
+                  const text = await response.text();
+                  return text;
+                },
+              }),
+            },
+            providerOptions: { openrouter: { user: qq } },
+          });
+          return await agent.generate({ messages: context.concat(messages) });
         }
         return await generateText({
           model: openrouter(name),
