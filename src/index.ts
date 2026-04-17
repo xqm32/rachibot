@@ -423,12 +423,23 @@ const app = new Elysia()
       }
       // /py
       else if (name === "py")
-        return await runMontyAsync(new Monty(ref ?? msg), {
+        return await runMontyAsync(new Monty(msg, { inputs: ["_"] }), {
           limits: {
             maxAllocations: 10000,
             maxDurationSecs: 5,
             maxMemory: 1024 * 1024,
             maxRecursionDepth: 100,
+          },
+          inputs: { _: ref },
+          externalFunctions: {
+            async ft(arg) {
+              const url = URL.parse(arg as string);
+              if (!url || !["http:", "https:"].includes(url.protocol))
+                throw new Error("invalid url");
+              const response = await fetch(url);
+              const text = await response.text();
+              return text;
+            },
           },
         });
 
