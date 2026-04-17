@@ -7,6 +7,7 @@
       "dependencies": {
         "@ai-sdk/xai": "^3.0.82",
         "@gi-tcg/core": "^0.19.1",
+        "@gi-tcg/data": "^0.19.1",
         "@octokit/request": "^10.0.8",
         "@openrouter/ai-sdk-provider": "^2.5.1",
         "@pydantic/monty": "^0.0.11",
@@ -44,6 +45,8 @@
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.1.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ=="],
 
     "@gi-tcg/core": ["@gi-tcg/core@0.19.1", "", { "dependencies": { "@gi-tcg/typings": "0.19.1", "@gi-tcg/utils": "0.19.1", "immer": "^10.0.3", "ohm-js": "^17.1.0" } }, "sha512-mDyxzj3UffhmUos4u8A0d70pCTwV1T/63RLbpA+b7vLZMTb/Spvl9dP3wXKGUwXdX6g6uC78XJVTMqW/RC9Lng=="],
+
+    "@gi-tcg/data": ["@gi-tcg/data@0.19.1", "", { "peerDependencies": { "@gi-tcg/core": "0.19.1" } }, "sha512-FuuBEADnrJlaVv/Qzq8wzfddvH0jWG72wKKKevUGuszsv8S6MmGsvFHzSw+NArws6z+pqlTq7cUvZGp6EfayhQ=="],
 
     "@gi-tcg/typings": ["@gi-tcg/typings@0.19.1", "", { "dependencies": { "@bufbuild/protobuf": "^2.2.2" } }, "sha512-B6/gPa4F+ug/2aWZxAkIEgH1tQLUakE8Vc1BcE7bCProGN4Wwew7rQg4PQLbql/52BiXZmgpBBt4eT/OfRSbmQ=="],
 
