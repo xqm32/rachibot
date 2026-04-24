@@ -10,7 +10,7 @@
         "@gi-tcg/data": "^0.19.1",
         "@octokit/request": "^10.0.8",
         "@openrouter/ai-sdk-provider": "^2.8.0",
-        "@pydantic/monty": "^0.0.16",
+        "@pydantic/monty": "^0.0.17",
         "ai": "^6.0.168",
         "cheerio": "^1.2.0",
         "dayjs": "^1.11.20",
@@ -70,19 +70,19 @@
 
     "@opentelemetry/api": ["@opentelemetry/api@1.9.0", "", {}, "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="],
 
-    "@pydantic/monty": ["@pydantic/monty@0.0.16", "", { "optionalDependencies": { "@pydantic/monty-darwin-arm64": "0.0.16", "@pydantic/monty-darwin-x64": "0.0.16", "@pydantic/monty-linux-arm64-gnu": "0.0.16", "@pydantic/monty-linux-x64-gnu": "0.0.16", "@pydantic/monty-wasm32-wasi": "0.0.16", "@pydantic/monty-win32-x64-msvc": "0.0.16" } }, "sha512-V/WlFpwNuNBHOLHefXYuHVBPHMsCyI+68/Kdtp9ZbZafIua7VS/Xc6TmK/HCfTiSPvb+Lcgl8JqveoXOIlh/SQ=="],
+    "@pydantic/monty": ["@pydantic/monty@0.0.17", "", { "optionalDependencies": { "@pydantic/monty-darwin-arm64": "0.0.17", "@pydantic/monty-darwin-x64": "0.0.17", "@pydantic/monty-linux-arm64-gnu": "0.0.17", "@pydantic/monty-linux-x64-gnu": "0.0.17", "@pydantic/monty-wasm32-wasi": "0.0.17", "@pydantic/monty-win32-x64-msvc": "0.0.17" } }, "sha512-z0MsRgj1QVBe4adRMAbl3ctpf0n1lZYbaq98fZg3qhKhs8sExtfS2BHCW8Z/emprUfXW25FSPe0Abd9dchEiCQ=="],
 
-    "@pydantic/monty-darwin-arm64": ["@pydantic/monty-darwin-arm64@0.0.16", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tXACDn8S3FAyhGwbvdP0/Y1Wii1x4plgZaaXWNde1ovDuIxbinP1JS1whFERxcZqcBuDtvV6HrBYbBwf2/W6UQ=="],
+    "@pydantic/monty-darwin-arm64": ["@pydantic/monty-darwin-arm64@0.0.17", "", { "os": "darwin", "cpu": "arm64" }, "sha512-vJFSwC7+rKX8lrrwwdZ6qZeqCsZCM9X9PvcUDvMYLnzI69CBAvfyd1roExkSPThg1GfDhehgC9sGrz/0uIjGhQ=="],
 
-    "@pydantic/monty-darwin-x64": ["@pydantic/monty-darwin-x64@0.0.16", "", { "os": "darwin", "cpu": "x64" }, "sha512-GoDeS2gCb3ElWG0IWae32c95O6CVgY4Pfu7yg4fFRfNQ/r01AlG5rTdtUdCpo9wIVw3sWkZYPGmZk7iMeD0AEg=="],
+    "@pydantic/monty-darwin-x64": ["@pydantic/monty-darwin-x64@0.0.17", "", { "os": "darwin", "cpu": "x64" }, "sha512-19gHyDM/RjBZsVz7K6vmlCpn0TyKdH8HT0CMP66yaewfPAuyhLWDJKgnv9QeVt+Vhv16dCsGuZ7l0rtmUPVC8g=="],
 
-    "@pydantic/monty-linux-arm64-gnu": ["@pydantic/monty-linux-arm64-gnu@0.0.16", "", { "os": "linux", "cpu": "arm64" }, "sha512-yWU557QFOIfJ42WgDzMpDqLwj6DSrd+xM+aKIjEkS6NBZCr0kRZzzBr+1GB1f5cmqx4VhJDWsvVGoR5Dda8SVg=="],
+    "@pydantic/monty-linux-arm64-gnu": ["@pydantic/monty-linux-arm64-gnu@0.0.17", "", { "os": "linux", "cpu": "arm64" }, "sha512-mx7v/LAJB/BOYfAVcohQQy+d8JiqddmByI72Hs2GuOlfRsJlk3BaHbanOi4tHAz81yDVnOKxshyPZs52VbBvZw=="],
 
-    "@pydantic/monty-linux-x64-gnu": ["@pydantic/monty-linux-x64-gnu@0.0.16", "", { "os": "linux", "cpu": "x64" }, "sha512-BrfqKFosOfORzGSkXqbRpYafkFJ+Et85ug3T4LIHjkEIB6sA8k/f1abmhbMEUmcJUBSmfqQiTsGAWUO+4Sc+wA=="],
+    "@pydantic/monty-linux-x64-gnu": ["@pydantic/monty-linux-x64-gnu@0.0.17", "", { "os": "linux", "cpu": "x64" }, "sha512-wJOKf9KqM6UoKvaqdArV90zT7arGAa3CDo65kxFgdY5iXByDtU0xgbPUpROfIWv8E8hMGA81cq9Do17YyIHfGQ=="],
 
-    "@pydantic/monty-wasm32-wasi": ["@pydantic/monty-wasm32-wasi@0.0.16", "", { "dependencies": { "@napi-rs/wasm-runtime": "^1.1.4" }, "cpu": "none" }, "sha512-9j5yxdKdermzzlZ35A67PvyvXlPaYdNjUHoNF70JrQOF1VtOXTJihF+LfC0H1WiYJscbbYfog8WADuJnWXPEWw=="],
+    "@pydantic/monty-wasm32-wasi": ["@pydantic/monty-wasm32-wasi@0.0.17", "", { "dependencies": { "@napi-rs/wasm-runtime": "^1.1.4" }, "cpu": "none" }, "sha512-j89Sau5+5m5oDlyOsfjD4hmLkIccVz2s6z5Ogb/s85UAjrCoBWvudH2irlLklD3Fp3Y+1lxT8PLDwx61ShjA9Q=="],
 
-    "@pydantic/monty-win32-x64-msvc": ["@pydantic/monty-win32-x64-msvc@0.0.16", "", { "os": "win32", "cpu": "x64" }, "sha512-lvSri9OhG4zufzXB0T76xuDg7zox6DvkQY5s2PurTWAMrO6y8AqGwxiEOVC7TzHkr8f0TpB2+kCCmFVUH0LcVg=="],
+    "@pydantic/monty-win32-x64-msvc": ["@pydantic/monty-win32-x64-msvc@0.0.17", "", { "os": "win32", "cpu": "x64" }, "sha512-cIYr5nOsxPqzMFRi/F58JT11T0kg9QRT7y1tVp76jeWnXMyZdAL0n/X4RnmdqIogZotLye4CwjFfNmTR5EWj7g=="],
 
     "@sinclair/typebox": ["@sinclair/typebox@0.34.41", "", {}, "sha512-6gS8pZzSXdyRHTIqoqSVknxolr1kzfy4/CeDnrzsVz8TTIWUbOBr6gnzOmTYJ3eXQNh4IYHIGi5aIL7sOZ2G/g=="],
 
