@@ -1312,7 +1312,7 @@ const app = new Elysia()
           const attach = process.env.OPENCODE_URL;
           const password = process.env.OPENCODE_SERVER_PASSWORD;
           const text =
-            await $`opencode run --agent ${agent} --attach ${attach} ${ref ?? msg} 2>&1`
+            await $`opencode run --agent ${agent} --attach ${attach} ${ref ?? msg}`
               .env({ OPENCODE_SERVER_PASSWORD: password })
               .text();
           return {
