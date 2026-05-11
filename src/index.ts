@@ -345,7 +345,7 @@ const app = new Elysia()
           [, content] = match;
         }
         const memoResponse = await fetch(
-          "https://memos.xqm32.org/api/v1/memos",
+          `${process.env.MEMOS_URL!}/api/v1/memos`,
           {
             method: "POST",
             headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
@@ -357,7 +357,7 @@ const app = new Elysia()
           },
         );
         const memo = (await memoResponse.json()) as { name: string };
-        return `https://memos.xqm32.org/${memo.name}`;
+        return `${process.env.MEMOS_URL!}/${memo.name}`;
       }
       // echo [msg]
       else if (msg.startsWith("echo")) {
@@ -793,7 +793,7 @@ const app = new Elysia()
         const link = URL.parse(ref);
         if (
           !link ||
-          link.hostname !== "memos.xqm32.org" ||
+          link.hostname !== new URL(process.env.MEMOS_URL!).hostname ||
           !link.pathname.startsWith("/memos/")
         )
           throw status(400, "invalid m command");
@@ -1089,9 +1089,8 @@ const app = new Elysia()
                   data: link,
                   mediaType: "application/pdf",
                 } as FilePart;
-              // memos.xqm32.org/memos
               else if (
-                link.hostname === "memos.xqm32.org" &&
+                link.hostname === new URL(process.env.MEMOS_URL!).hostname &&
                 link.pathname.startsWith("/memos/")
               ) {
                 link.pathname = `/api/v1${link.pathname}`;
@@ -1234,7 +1233,7 @@ const app = new Elysia()
 
       if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const memoResponse = await fetch("https://memos.xqm32.org/api/v1/memos", {
+      const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/v1/memos`, {
         method: "POST",
         headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
         body: JSON.stringify({
@@ -1395,21 +1394,21 @@ const app = new Elysia()
           return images.join("\n");
         }
 
-        await fetch(`https://memos.xqm32.org/api/v1/${memo.name}`, {
+        await fetch(`${process.env.MEMOS_URL!}/api/v1/${memo.name}`, {
           method: "PATCH",
           headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
           body: JSON.stringify({ content: text }),
         });
 
         if (tags.has("memo"))
-          return [`📝 https://memos.xqm32.org/${memo.name}`, text].join("\n\n");
+          return [`📝 ${process.env.MEMOS_URL!}/${memo.name}`, text].join("\n\n");
 
         return text;
       };
 
       const text = await Promise.race([
         respond(),
-        sleep(90000).then(() => `https://memos.xqm32.org/${memo.name}`),
+        sleep(90000).then(() => `${process.env.MEMOS_URL!}/${memo.name}`),
       ]);
 
       return text;
@@ -1461,7 +1460,7 @@ const app = new Elysia()
           });
           const response = await app.handle(request);
           const text = await response.text();
-          await fetch(`https://memos.xqm32.org/api/v1/${name}/comments`, {
+          await fetch(`${process.env.MEMOS_URL!}/api/v1/${name}/comments`, {
             method: "POST",
             headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
             body: JSON.stringify({
