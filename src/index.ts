@@ -51,12 +51,11 @@ bot.command(["7s", "card"], async (ctx) => {
       fuzzyMatchURL.searchParams.append("query", args);
       const fuzzyMatchResponse = await fetch(fuzzyMatchURL);
       if (!fuzzyMatchResponse.ok) throw new Error("fuzzy match request failed");
-      const { matched, fallback, query } =
-        (await fuzzyMatchResponse.json()) as {
-          matched: boolean;
-          fallback: string[][];
-          query: string;
-        };
+      const { matched, fallback, query } = (await fuzzyMatchResponse.json()) as {
+        matched: boolean;
+        fallback: string[][];
+        query: string;
+      };
       if (!matched) {
         if (fallback.length === 0) throw new Error(`${args} not found`);
         const chs = fallback.map(([chs]) => chs);
@@ -70,9 +69,7 @@ bot.command(["7s", "card"], async (ctx) => {
 
       let version, authorName;
       if (process.env.CER) {
-        const versionResponse = await fetch(
-          "https://beta.play.piovium.org/api/version",
-        );
+        const versionResponse = await fetch("https://beta.play.piovium.org/api/version");
         const { currentGameVersion } = (await versionResponse.json()) as {
           currentGameVersion: string;
         };
@@ -84,24 +81,20 @@ bot.command(["7s", "card"], async (ctx) => {
       }
 
       await ctx.replyWithChatAction("upload_photo");
-      const resposne = await fetch(
-        "https://card-img-renderer.7shengzhaohuan.online/render",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id,
-            version,
-            authorImageUrl:
-              "https://7s-1304005994.cos.ap-singapore.myqcloud.com/clezn.jpg",
-            authorName,
-            renderFormat: "webp",
-            renderQuality: 0.75,
-            language: ctx.hasCommand("7s") ? "CHS" : "EN",
-            displayId: false,
-          }),
-        },
-      );
+      const resposne = await fetch("https://card-img-renderer.7shengzhaohuan.online/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          version,
+          authorImageUrl: "https://7s-1304005994.cos.ap-singapore.myqcloud.com/clezn.jpg",
+          authorName,
+          renderFormat: "webp",
+          renderQuality: 0.75,
+          language: ctx.hasCommand("7s") ? "CHS" : "EN",
+          displayId: false,
+        }),
+      });
       const { url } = (await resposne.json()) as { url: string };
       await ctx.replyWithPhoto(new InputFile(await fetch(url)));
     } catch (error) {
@@ -241,8 +234,7 @@ const app = new Elysia()
           [, key] = match;
           histories = await redis.lrange(`key:${key}:history`, 0, -1);
         }
-        if (histories.length === 0)
-          throw status(404, `key ${key} history not found`);
+        if (histories.length === 0) throw status(404, `key ${key} history not found`);
         // #raw
         if (tags.has("raw")) return histories;
         return histories
@@ -251,9 +243,7 @@ const app = new Elysia()
           .map(({ value, updatedAt, updatedBy }) =>
             [
               value,
-              `⏱️ ${dayjs(updatedAt)
-                .tz("Asia/Shanghai")
-                .format("YYYY-MM-DD HH:mm:ss")}`,
+              `⏱️ ${dayjs(updatedAt).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")}`,
               `✍️ ${updatedBy}`,
             ].join("\n"),
           )
@@ -301,11 +291,7 @@ const app = new Elysia()
         await redis.set(`logs:${group}`, JSON.stringify(keys));
         await redis.expire(`logs:${group}`, 3600);
 
-        const format = async ({
-          key,
-          lastModified,
-          size,
-        }: (typeof recent)[number]) => {
+        const format = async ({ key, lastModified, size }: (typeof recent)[number]) => {
           const { m } = (await logsS3.file(key).json()) as {
             m: {
               roomId: number;
@@ -344,18 +330,15 @@ const app = new Elysia()
           if (!match) throw status(400, "invalid memo command");
           [, content] = match;
         }
-        const memoResponse = await fetch(
-          `${process.env.MEMOS_URL!}/api/v1/memos`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
-            body: JSON.stringify({
-              state: "NORMAL",
-              content,
-              visibility: "PUBLIC",
-            }),
-          },
-        );
+        const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/v1/memos`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+          body: JSON.stringify({
+            state: "NORMAL",
+            content,
+            visibility: "PUBLIC",
+          }),
+        });
         const memo = (await memoResponse.json()) as { name: string };
         return `${process.env.MEMOS_URL!}/${memo.name}`;
       }
@@ -398,17 +381,14 @@ const app = new Elysia()
           if (args) body.options["userArguments"] = args;
         }
 
-        const response = await fetch(
-          `https://godbolt.org/api/compiler/${compiler}/compile`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(body),
+        const response = await fetch(`https://godbolt.org/api/compiler/${compiler}/compile`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-        );
+          body: JSON.stringify(body),
+        });
         const text = await response.text();
 
         // #raw
@@ -451,9 +431,7 @@ const app = new Elysia()
                 throw new Error("invalid url");
               const response = await fetch(url);
               const log = await response.json();
-              return JSON.stringify(
-                deserializeGameStateLog(getData(log.gv), log),
-              );
+              return JSON.stringify(deserializeGameStateLog(getData(log.gv), log));
             },
           },
         });
@@ -502,9 +480,7 @@ const app = new Elysia()
       else if (msg === "rooms" || msg === "r") {
         const [main, beta] = await Promise.all([
           fetch("https://play.piovium.org/api/rooms").then((r) => r.json()),
-          fetch("https://beta.play.piovium.org/api/rooms").then((r) =>
-            r.json(),
-          ),
+          fetch("https://beta.play.piovium.org/api/rooms").then((r) => r.json()),
         ]);
 
         // #raw
@@ -539,8 +515,7 @@ const app = new Elysia()
         return `${pull.title}\n${pull.html_url}`;
       }
       // <code>
-      else if (msg.length === 3 && /^\d{3}$/.test(msg))
-        return `https://http.cat/${msg}.jpg`;
+      else if (msg.length === 3 && /^\d{3}$/.test(msg)) return `https://http.cat/${msg}.jpg`;
       // ip <address>
       else if (msg.startsWith("ip")) {
         const match = msg.match(/ip\s*(\S*)/s);
@@ -578,8 +553,7 @@ const app = new Elysia()
           message?: string;
         }
         const ip = (await response.json()) as IP;
-        if (ip.status !== "success")
-          throw status(400, ip.message ?? "ip lookup failed");
+        if (ip.status !== "success") throw status(400, ip.message ?? "ip lookup failed");
 
         return [
           `🧭 ${ip.query}`,
@@ -638,19 +612,14 @@ const app = new Elysia()
         // #raw
         if (tags.has("raw")) return models;
 
-        const format = (price: string) =>
-          (parseFloat(price) * 1_000_000).toPrecision(3);
+        const format = (price: string) => (parseFloat(price) * 1_000_000).toPrecision(3);
         return models
           .filter((m) => m.id.includes(filter))
           .map((m) => {
             const { pricing } = m;
             const { prompt, completion } = pricing;
             if (tags.has("price"))
-              return [
-                m.id,
-                `🤔 $${format(prompt)}/M`,
-                `🤖 $${format(completion)}/M`,
-              ].join("\n");
+              return [m.id, `🤔 $${format(prompt)}/M`, `🤖 $${format(completion)}/M`].join("\n");
             return m.id;
           })
           .join("\n");
@@ -660,8 +629,7 @@ const app = new Elysia()
         const match = msg.match(/(lol|cs)m\s*(\S*)\s*(\S*)/s);
         if (!match) throw status(400, "invalid m command");
         let [, game, start, end] = match;
-        if (start.length === 0)
-          start = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD");
+        if (start.length === 0) start = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD");
         if (end.length === 0) end = start;
 
         const gid: Record<string, string> = { lol: "2", cs: "7" };
@@ -701,14 +669,8 @@ const app = new Elysia()
         const { data } = (await response.json()) as { data: unknown };
         const { list: matches } = data as { list: Match[] };
         const format = (match: Match) => {
-          const start = dayjs
-            .unix(match.stime)
-            .tz("Asia/Shanghai")
-            .format("YYYY-MM-DD HH:mm:ss");
-          const end = dayjs
-            .unix(match.etime)
-            .tz("Asia/Shanghai")
-            .format("YYYY-MM-DD HH:mm:ss");
+          const start = dayjs.unix(match.stime).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss");
+          const end = dayjs.unix(match.etime).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss");
           const lines = [
             `${match.season.title} ${match.game_stage}`,
             `${start} ~ ${end}`,
@@ -738,10 +700,9 @@ const app = new Elysia()
       }
       // 来点儿牌组 | 来点牌组 | 牌组 | decks | d
       else if (["来点儿牌组", "来点牌组", "牌组", "decks", "d"].includes(msg)) {
-        const response = await fetch(
-          "https://api-takumi.mihoyo.com/event/cardsquare/index",
-          { method: "POST" },
-        );
+        const response = await fetch("https://api-takumi.mihoyo.com/event/cardsquare/index", {
+          method: "POST",
+        });
         const { data } = (await response.json()) as { data: unknown };
 
         interface Deck {
@@ -834,19 +795,16 @@ const app = new Elysia()
         // / -> /help
         if (name.length === 0) chain.push("help");
 
-        const { data } = (await request(
-          "GET /repos/{owner}/{repo}/contents/{path}",
-          {
-            mediaType: { format: "raw" },
-            owner: "xqm32",
-            repo: "rachibot",
-            path: "src/index.ts",
-            headers: {
-              authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
+        const { data } = (await request("GET /repos/{owner}/{repo}/contents/{path}", {
+          mediaType: { format: "raw" },
+          owner: "xqm32",
+          repo: "rachibot",
+          path: "src/index.ts",
+          headers: {
+            authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            "X-GitHub-Api-Version": "2022-11-28",
           },
-        )) as unknown as { data: string };
+        })) as unknown as { data: string };
         content.push({ type: "text", text: data });
       }
       // lol [filter] [start] [end]
@@ -883,17 +841,12 @@ const app = new Elysia()
         const gaming = games.filter((game) => {
           const sDate = dayjs.tz(game.sDate, "Asia/Shanghai").startOf("day");
           const eDate = dayjs.tz(game.eDate, "Asia/Shanghai").endOf("day");
-          return (
-            sDate.isBefore(stime.endOf("day")) &&
-            eDate.isAfter(etime.startOf("day"))
-          );
+          return sDate.isBefore(stime.endOf("day")) && eDate.isAfter(etime.startOf("day"));
         });
 
         // #gaming
         if (tags.has("gaming"))
-          return gaming
-            .map((g) => `${g.GameName} ${g.sDate} ~ ${g.eDate}`)
-            .join("\n");
+          return gaming.map((g) => `${g.GameName} ${g.sDate} ~ ${g.eDate}`).join("\n");
 
         interface Match {
           bMatchId: string;
@@ -929,10 +882,7 @@ const app = new Elysia()
           // stime < mDate < etime
           const matching = matches.filter((match) => {
             const mDate = dayjs.tz(match.MatchDate, "Asia/Shanghai");
-            return (
-              mDate.isAfter(stime.startOf("day")) &&
-              mDate.isBefore(etime.endOf("day"))
-            );
+            return mDate.isAfter(stime.startOf("day")) && mDate.isBefore(etime.endOf("day"));
           });
           return matching.map(formatMatch).join("\n");
         }
@@ -949,10 +899,7 @@ const app = new Elysia()
             // lol <filter>
             if (start.length === 0) return mDate.isBefore(etime);
             // lol <filter> <start> <end>
-            return (
-              mDate.isAfter(stime.startOf("day")) &&
-              mDate.isBefore(etime.endOf("day"))
-            );
+            return mDate.isAfter(stime.startOf("day")) && mDate.isBefore(etime.endOf("day"));
           })
           .at(-1);
         if (!last) throw status(404, `match ${filter} not found`);
@@ -966,9 +913,9 @@ const app = new Elysia()
             `https://lpl.qq.com/web201612/data/LOL_MATCH_DETAIL_${last.bMatchId}.js`,
           );
           const text = await response.text();
-          const { sExt4 } = JSON.parse(
-            text.slice("var dataObj=".length, -";".length),
-          ) as { sExt4: string | null };
+          const { sExt4 } = JSON.parse(text.slice("var dataObj=".length, -";".length)) as {
+            sExt4: string | null;
+          };
           if (!sExt4) throw status(404, "news not found");
           const news = JSON.parse(sExt4) as { title: string }[];
           return news.map((n) => n.title).join("\n");
@@ -1027,8 +974,7 @@ const app = new Elysia()
           tags.delete("random");
         }
         // xkcd [comic]
-        else if (comic.length > 0)
-          response = await fetch(`https://xkcd.com/${comic}`);
+        else if (comic.length > 0) response = await fetch(`https://xkcd.com/${comic}`);
         // xkcd
         else response = await fetch("https://xkcd.com");
 
@@ -1051,9 +997,7 @@ const app = new Elysia()
 
         let text = await redis.get(`key:$smart-questions`);
         if (!text) {
-          const response = await fetch(
-            "http://www.catb.org/~esr/faqs/smart-questions.html",
-          );
+          const response = await fetch("http://www.catb.org/~esr/faqs/smart-questions.html");
           text = await response.text();
           await redis.set(`key:$smart-questions`, text);
           await redis.expire(`key:$smart-questions`, 86400);
@@ -1080,10 +1024,7 @@ const app = new Elysia()
             .filter((url) => url !== null)
             .map(async (link) => {
               // arxiv.org/pdf
-              if (
-                link.hostname === "arxiv.org" &&
-                link.pathname.startsWith("/pdf/")
-              )
+              if (link.hostname === "arxiv.org" && link.pathname.startsWith("/pdf/"))
                 return {
                   type: "file",
                   data: link,
@@ -1114,18 +1055,12 @@ const app = new Elysia()
 
               let text = await response.text();
 
-              const featureCheerio = await redis.hget(
-                `feature:${qq}`,
-                "cheerio",
-              );
+              const featureCheerio = await redis.hget(`feature:${qq}`, "cheerio");
               // mp.weixin.qq.com
-              if (link.hostname === "mp.weixin.qq.com")
-                text = load(text)("#js_content").text();
+              if (link.hostname === "mp.weixin.qq.com") text = load(text)("#js_content").text();
               // tc39.es
-              else if (link.hostname === "tc39.es")
-                text = load(text).text().replaceAll(/\s+/g, "");
-              else if (featureCheerio === "true" || tags.has("cheerio"))
-                text = load(text).text();
+              else if (link.hostname === "tc39.es") text = load(text).text().replaceAll(/\s+/g, "");
+              else if (featureCheerio === "true" || tags.has("cheerio")) text = load(text).text();
 
               text = `<resource uri="${link}">\n${text}\n</resource>`;
               return { type: "text", text } as TextPart;
@@ -1151,8 +1086,7 @@ const app = new Elysia()
       // name
       if (tags.has("name") || msg === "name") return name;
       // chain
-      if (tags.has("chain") || msg === "chain")
-        return chain.map((v) => `/${v}`).join(" -> ");
+      if (tags.has("chain") || msg === "chain") return chain.map((v) => `/${v}`).join(" -> ");
 
       let context: ModelMessage[] = [];
       const featureContext = await redis.hget(`feature:${qq}`, "context");
@@ -1180,8 +1114,7 @@ const app = new Elysia()
 
         return context
           .flatMap((m) => {
-            if (typeof m.content === "string")
-              return { role: m.role, content: m.content };
+            if (typeof m.content === "string") return { role: m.role, content: m.content };
             return m.content
               .filter((part) => part.type === "text")
               .map((part) => ({ role: m.role, content: part.text }));
@@ -1195,12 +1128,7 @@ const app = new Elysia()
             }[m.role];
 
             // fine-structure constant
-            const content = m.content
-              .trim()
-              .slice(0, 137)
-              .split("\n")
-              .at(0)
-              ?.trim();
+            const content = m.content.trim().slice(0, 137).split("\n").at(0)?.trim();
 
             return `${role} ${content}`;
           })
@@ -1224,8 +1152,7 @@ const app = new Elysia()
       }
       if (ref) {
         const prefix = await redis.get("key:$prefix");
-        if (prefix && ref.startsWith(prefix))
-          ref = ref.slice(prefix.length).trim();
+        if (prefix && ref.startsWith(prefix)) ref = ref.slice(prefix.length).trim();
         content.push({ type: "text", text: `<quote>\n${ref}\n</quote>` });
       }
       if (msg.length > 0) content.push({ type: "text", text: msg });
@@ -1281,9 +1208,7 @@ const app = new Elysia()
             if (!imageResponse.ok || !imageResponse.headers.has("Content-Type"))
               throw status(500, "failed to fetch edited image");
             const mediaType = imageResponse.headers.get("Content-Type")!;
-            const uint8Array = new Uint8Array(
-              await imageResponse.arrayBuffer(),
-            );
+            const uint8Array = new Uint8Array(await imageResponse.arrayBuffer());
 
             return {
               text: name,
@@ -1306,14 +1231,12 @@ const app = new Elysia()
           };
         } else if (name.startsWith("opencode/")) {
           const agent = name.slice("opencode/".length);
-          if (!["piovium"].includes(agent))
-            throw status(403, "agent not allowed");
+          if (!["piovium"].includes(agent)) throw status(403, "agent not allowed");
           const attach = process.env.OPENCODE_URL;
           const password = process.env.OPENCODE_SERVER_PASSWORD;
-          const text =
-            await $`opencode run --agent ${agent} --attach ${attach} ${ref ?? msg}`
-              .env({ OPENCODE_SERVER_PASSWORD: password })
-              .text();
+          const text = await $`opencode run --agent ${agent} --attach ${attach} ${ref ?? msg}`
+            .env({ OPENCODE_SERVER_PASSWORD: password })
+            .text();
           return {
             text: stripANSI(text),
             files: [],
@@ -1363,17 +1286,10 @@ const app = new Elysia()
         const { text, files, usage, response } = await generate();
 
         const { modelId } = response;
-        await redis.set(
-          `usage:${qq}:${group}:last`,
-          JSON.stringify({ modelId, ...usage }),
-        );
+        await redis.set(`usage:${qq}:${group}:last`, JSON.stringify({ modelId, ...usage }));
         await redis.rpush(
           `context:${qq}:${group}`,
-          JSON.stringify(
-            messages
-              .concat(response.messages)
-              .filter((m) => m.role !== "system"),
-          ),
+          JSON.stringify(messages.concat(response.messages).filter((m) => m.role !== "system")),
         );
         await redis.ltrim(`context:${qq}:${group}`, -42, -1);
         await redis.expire(`context:${qq}:${group}`, 3600);
@@ -1426,22 +1342,17 @@ const app = new Elysia()
   .post("/api/v1/chat/completions", async ({ request }) => {
     const enabled = await redis.get("key:$/api/v1/chat/completions");
     if (enabled === "false") throw status(403, "endpoint disabled");
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: request.body,
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: request.body,
+    });
     return new Response(response.body);
   })
-  .post(`/${process.env.BOT_TOKEN}`, (context) =>
-    webhookCallback(bot, "elysia")(context),
-  )
+  .post(`/${process.env.BOT_TOKEN}`, (context) => webhookCallback(bot, "elysia")(context))
   .post(
     "/memos",
     ({ body }) => {
