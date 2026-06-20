@@ -624,15 +624,15 @@ const app = new Elysia()
           })
           .join("\n");
       }
-      // <lol | cs>m [start] [end]
-      else if (msg.startsWith("lolm") || msg.startsWith("csm")) {
-        const match = msg.match(/(lol|cs)m\s*(\S*)\s*(\S*)/s);
+      // <lol | cs | val>m [start] [end]
+      else if (msg.startsWith("lolm") || msg.startsWith("csm") || msg.startsWith("valm")) {
+        const match = msg.match(/(lol|cs|val)m\s*(\S*)\s*(\S*)/s);
         if (!match) throw status(400, "invalid m command");
         let [, game, start, end] = match;
         if (start.length === 0) start = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD");
         if (end.length === 0) end = start;
 
-        const gid: Record<string, string> = { lol: "2", cs: "7" };
+        const gid: Record<string, string> = { lol: "2", cs: "7", val: "48" };
         const url = new URL("https://api.bilibili.com/x/esports/matchs/list");
         url.searchParams.append("mid", "0");
         url.searchParams.append("gid", gid[game]);
