@@ -7,17 +7,17 @@
     "bot": "bun run --watch src/bot.ts"
   },
   "dependencies": {
-    "@ai-sdk/xai": "^3.0.93",
-    "@gi-tcg/core": "^0.20.5",
-    "@gi-tcg/data": "^0.20.5",
+    "@ai-sdk/xai": "^3.0.96",
+    "@gi-tcg/core": "^0.20.7",
+    "@gi-tcg/data": "^0.20.7",
     "@octokit/request": "^10.0.10",
-    "@openrouter/ai-sdk-provider": "^2.9.0",
+    "@openrouter/ai-sdk-provider": "^2.9.1",
     "@pydantic/monty": "^0.0.18",
-    "ai": "^6.0.193",
+    "ai": "^6.0.209",
     "cheerio": "^1.2.0",
     "dayjs": "^1.11.21",
-    "elysia": "1.4.28",
-    "grammy": "^1.43.0",
+    "elysia": "1.4.29",
+    "grammy": "^1.44.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
