@@ -1182,6 +1182,7 @@ const app = new Elysia()
               x_search: xai.tools.xSearch(),
               code_execution: xai.tools.codeExecution(),
             },
+            allowSystemInMessages: true,
           });
         else if (name.startsWith("image/")) {
           name = name.slice("image/".length);
@@ -1280,6 +1281,7 @@ const app = new Elysia()
           model: openrouter(name),
           messages: context.concat(messages),
           providerOptions: { openrouter: { user: qq } },
+          allowSystemInMessages: true,
         });
       };
 
