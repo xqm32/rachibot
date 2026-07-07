@@ -1236,7 +1236,8 @@ const app = new Elysia()
           if (!["piovium"].includes(agent)) throw status(403, "agent not allowed");
           const attach = process.env.OPENCODE_URL;
           const password = process.env.OPENCODE_SERVER_PASSWORD;
-          const text = await $`opencode run --agent ${agent} --attach ${attach} ${ref ?? msg}`
+          if (ref) msg = `${ref}\n---\n${msg}`;
+          const text = await $`opencode run --agent ${agent} --attach ${attach} ${msg}`
             .env({ OPENCODE_SERVER_PASSWORD: password })
             .text();
           return {
