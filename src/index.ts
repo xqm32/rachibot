@@ -516,10 +516,10 @@ const app = new Elysia()
       }
       // <code>
       else if (msg.length === 3 && /^\d{3}$/.test(msg)) return `https://http.cat/${msg}.jpg`;
-      // ip <address>
-      else if (msg.startsWith("ip")) {
-        const match = msg.match(/ip\s*(\S*)/s);
-        if (!match) throw status(400, "invalid ip command");
+      // .ip <address>
+      else if (msg.startsWith(".ip")) {
+        const match = msg.match(/\.ip\s*(\S*)/s);
+        if (!match) throw status(400, "invalid .ip command");
         const [, host] = match;
         if (!net.isIP(host)) throw status(400, "invalid ip address");
 
@@ -564,10 +564,10 @@ const app = new Elysia()
           `📍 https://maps.google.com/?q=${ip.lat},${ip.lon}`,
         ].join("\n");
       }
-      // resolve <name>
-      else if (msg.startsWith("resolve")) {
-        const match = msg.match(/resolve\s*(\S+)/s);
-        if (!match) throw status(400, "invalid resolve command");
+      // .resolve <name>
+      else if (msg.startsWith(".resolve")) {
+        const match = msg.match(/\.resolve\s*(\S+)/s);
+        if (!match) throw status(400, "invalid .resolve command");
         let [, name] = match;
         name = URL.parse(name)?.hostname ?? name;
 
