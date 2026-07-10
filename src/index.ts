@@ -1170,7 +1170,13 @@ const app = new Elysia()
           visibility: "PUBLIC",
         }),
       });
-      const memo = (await memoResponse.json()) as { name: string };
+      const memo = await (async () => {
+        try {
+          return (await memoResponse.json()) as { name: string };
+        } catch {
+          return { name: "" };
+        }
+      })();
 
       const generate = async () => {
         if (name.startsWith("grok/"))
