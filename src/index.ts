@@ -987,7 +987,7 @@ const app = new Elysia()
         // #image
         if (tags.has("image")) return url;
 
-        content.push({ type: "image", image: new URL(url) });
+        content.push({ type: "file", mediaType: "image", data: new URL(url) });
       }
       // ref
       // ask
@@ -1149,7 +1149,7 @@ const app = new Elysia()
       // user [image, ref, msg]
       if (image) {
         const url = URL.parse(image);
-        if (url) content.push({ type: "image", image: url });
+        if (url) content.push({ type: "file", mediaType: "image", data: url });
       }
       if (ref) {
         const prefix = await redis.get("key:$prefix");
