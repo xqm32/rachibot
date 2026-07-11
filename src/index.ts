@@ -102,7 +102,7 @@ bot.command(["7s", "card"], async (ctx) => {
     }
   })();
 });
-bot.hears(/\/\s*(.*)/s, async (ctx) => {
+bot.hears(/\/x\s*(.*)/s, async (ctx) => {
   await ctx.replyWithChatAction("typing");
   (async () => {
     try {
