@@ -1243,12 +1243,15 @@ const app = new Elysia()
           const attach = process.env.OPENCODE_URL;
           const password = process.env.OPENCODE_SERVER_PASSWORD;
           if (ref) msg = `${ref}\n---\n${msg}`;
-          const text = await $`opencode run --agent ${agent} --attach ${attach} ${msg}`
-            .nothrow()
-            .env({ OPENCODE_SERVER_PASSWORD: password })
-            .text();
+          const { stdout, stderr } =
+            await $`opencode run --agent ${agent} --attach ${attach} ${msg}`
+              .quiet()
+              .nothrow()
+              .env({ OPENCODE_SERVER_PASSWORD: password });
+          const [, line] = stripANSI(stderr.toString()).split("\n", 2);
+          const text = [line, stripANSI(stdout.toString())].join("\n\n");
           return {
-            text: stripANSI(text),
+            text,
             files: [],
             usage: {},
             response: { modelId: name, messages: [] },
