@@ -168,6 +168,16 @@ const app = new Elysia()
         });
       }
 
+      // #<tags> -> /#<tags>
+      if (chain[0] === "")
+        for (const tag of tags) {
+          const key = `#${tag}`;
+          if (await redis.exists(`key:/${key}`)) {
+            chain[0] = key;
+            break;
+          }
+        }
+
       // #
       if (tags.has("")) {
         // not a command
