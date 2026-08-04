@@ -502,6 +502,7 @@ const app = new Elysia()
           return `${id} 👉 ${sides}`;
         };
         return [
+          await redis.get(`key:#announcement`),
           "===== Main =====",
           ...main.map(format),
           "===== Beta =====",
