@@ -12,7 +12,7 @@
     "@gi-tcg/data": "^0.20.7",
     "@octokit/request": "^10.0.13",
     "@openrouter/ai-sdk-provider": "^3.0.0",
-    "@pydantic/monty": "^0.0.21",
+    "@pydantic/monty": "0.0.18",
     "ai": "^7.0.58",
     "cheerio": "^1.2.0",
     "dayjs": "^1.11.21",
