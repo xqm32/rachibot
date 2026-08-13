@@ -507,7 +507,9 @@ const app = new Elysia()
           ...main.map(format),
           "===== Beta =====",
           ...beta.map(format),
-        ].join("\n");
+        ]
+          .filter((value) => value !== "🈚️")
+          .join("\n");
       }
       // guyu | gy
       else if (msg === "guyu" || msg === "gy") {
