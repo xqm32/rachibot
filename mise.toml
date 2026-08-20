@@ -1,5 +1,5 @@
 [settings]
-minimum_release_age_excludes = ["opencode"]
+minimum_release_age_excludes = ["bun", "opencode"]
 
 [tools]
 bun = "latest"
