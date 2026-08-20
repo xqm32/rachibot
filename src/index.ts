@@ -133,6 +133,15 @@ const app = new Elysia()
   .get("/", () => "Hello Elysia")
   .post(
     "/",
+    {
+      body: t.Object({
+        qq: t.Optional(t.String()),
+        group: t.Optional(t.String()),
+        msg: t.String(),
+        ref: t.Optional(t.String()),
+        image: t.Optional(t.String()),
+      }),
+    },
     async ({ body, set }) => {
       let { qq, group, msg, ref, image } = body;
 
@@ -1356,15 +1365,6 @@ const app = new Elysia()
 
       return text;
     },
-    {
-      body: t.Object({
-        qq: t.Optional(t.String()),
-        group: t.Optional(t.String()),
-        msg: t.String(),
-        ref: t.Optional(t.String()),
-        image: t.Optional(t.String()),
-      }),
-    },
   )
   .post("/api/v1/chat/completions", async ({ request }) => {
     const enabled = await redis.get("key:$/api/v1/chat/completions");
@@ -1379,9 +1379,19 @@ const app = new Elysia()
     });
     return new Response(response.body);
   })
-  .post(`/${process.env.BOT_TOKEN}`, (context) => webhookCallback(bot, "elysia")(context))
+  .post(`/${process.env.BOT_TOKEN}`, (context) => webhookCallback(bot, "elysia")(context as any))
   .post(
     "/memos",
+    {
+      body: t.Object({
+        creator: t.String(),
+        memo: t.Object({
+          name: t.String(),
+          content: t.String(),
+        }),
+        activityType: t.String(),
+      }),
+    },
     ({ body }) => {
       const { creator, memo, activityType } = body;
       if (activityType !== "memos.memo.created") return;
@@ -1408,16 +1418,6 @@ const app = new Elysia()
             }),
           });
         })();
-    },
-    {
-      body: t.Object({
-        creator: t.String(),
-        memo: t.Object({
-          name: t.String(),
-          content: t.String(),
-        }),
-        activityType: t.String(),
-      }),
     },
   );
 
