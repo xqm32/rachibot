@@ -14,7 +14,7 @@ import {
   ToolLoopAgent,
   UserContent,
 } from "ai";
-import { $, randomUUIDv7, redis, s3, S3Client, sleep, stripANSI } from "bun";
+import { $, randomUUIDv7, redis, s3, S3Client, sleep, stripANSI, YAML } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -497,13 +497,17 @@ const app = new Elysia()
       }
       // rooms | r
       else if (msg === "rooms" || msg === "r") {
-        const [main, beta] = await Promise.all([
-          fetch("https://play.piovium.org/api/rooms").then((r) => r.json()),
-          fetch("https://beta.play.piovium.org/api/rooms").then((r) => r.json()),
-        ]);
+        const value = await redis.get("key:$urls");
+        if (!value) throw status(404, "urls not found");
+
+        const urls = YAML.parse(value) as Record<string, string>;
+        const entries = Object.entries(urls);
+        const raw = await Promise.all(
+          entries.map(async ([name, url]) => [name, await fetch(url).then((r) => r.json())]),
+        );
 
         // #raw
-        if (tags.has("raw")) return { main, beta };
+        if (tags.has("raw")) return raw;
 
         const format = (room: { id: number; players: { name: string }[] }) => {
           const { id, players } = room;
@@ -512,10 +516,7 @@ const app = new Elysia()
         };
         return [
           await redis.get(`key:#announcement`),
-          "===== Main =====",
-          ...main.map(format),
-          "===== Beta =====",
-          ...beta.map(format),
+          ...raw.flatMap(([name, rooms]) => [`===== ${name} =====`, ...rooms.map(format)]),
         ]
           .filter((value) => value !== "🈚️")
           .join("\n");
