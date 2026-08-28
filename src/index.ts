@@ -503,7 +503,12 @@ const app = new Elysia()
         const urls = YAML.parse(value) as Record<string, string>;
         const entries = Object.entries(urls);
         const raw = await Promise.all(
-          entries.map(async ([name, url]) => [name, await fetch(url).then((r) => r.json())]),
+          entries.map(async ([name, url]) =>
+            fetch(url)
+              .then((response) => response.json())
+              .then((data) => [name, data])
+              .catch((error) => [`${name} (${error})`, []]),
+          ),
         );
 
         // #raw
