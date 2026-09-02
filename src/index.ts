@@ -517,7 +517,7 @@ const app = new Elysia()
         const format = (room: { id: number; players: { name: string }[] }) => {
           const { id, players } = room;
           const sides = players.map((player) => player.name).join(" 🆚 ");
-          return `${id} 👉 ${sides}`;
+          return `${id.toString().padStart(4, '0')} 👉 ${sides}`;
         };
         return [
           await redis.get(`key:#announcement`),
