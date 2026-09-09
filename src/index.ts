@@ -1,3 +1,4 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { xai } from "@ai-sdk/xai";
 import { deserializeGameStateLog } from "@gi-tcg/core";
 import getData from "@gi-tcg/data";
@@ -38,6 +39,13 @@ const logsS3 = new S3Client({
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
+});
+
+const sub2api = createOpenAICompatible({
+  name: "sub2api",
+  apiKey: process.env.SUB2API_API_KEY!,
+  baseURL: process.env.SUB2API_BASE_URL!,
+  includeUsage: true,
 });
 
 export const bot = new Bot(process.env.BOT_TOKEN!);
@@ -1315,6 +1323,12 @@ const app = new Elysia()
             providerOptions: { openrouter: { user: qq } },
           });
           return await agent.generate({ messages: context.concat(messages) });
+        } else if (name.startsWith("sub2api/")) {
+          return await generateText({
+            model: sub2api(name.slice("sub2api/".length)),
+            messages: context.concat(messages),
+            allowSystemInMessages: true,
+          });
         }
         return await generateText({
           model: openrouter(name),
