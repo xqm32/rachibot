@@ -318,7 +318,10 @@ const app = new Elysia()
         await redis.set(`logs:${group}`, JSON.stringify(keys));
         await redis.expire(`logs:${group}`, 3600);
 
-        const format = async ({ key, lastModified, size }: (typeof recent)[number]) => {
+        const format = async (
+          { key, lastModified, size }: (typeof recent)[number],
+          index: number,
+        ) => {
           const { m } = (await logsS3.file(key).json()) as {
             m: {
               roomId: number;
@@ -326,8 +329,7 @@ const app = new Elysia()
             };
           };
           return [
-            key,
-            `${m.roomId} 👉 ${m.players.map((player) => player.name).join(" 🆚 ")}`,
+            `${index + 1}. ${m.roomId} 👉 ${m.players.map((player) => player.name).join(" 🆚 ")}`,
             `⏱️ ${dayjs(lastModified).tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm:ss")} (${((size ?? 0) / 1024).toFixed(2)} KiB)`,
           ].join("\n");
         };
@@ -335,17 +337,17 @@ const app = new Elysia()
         const results = await Promise.all(recent.map(format));
         return results.join("\n\n");
       }
-      // log <path>
+      // log <index>
       else if (msg.startsWith("log")) {
-        const match = msg.match(/log\s+(\S+)/s);
+        const match = msg.match(/log\s+(\d+)/s);
         if (!match) throw status(400, "invalid log command");
-        let [, path] = match;
+        const index = parseInt(match[1]);
         const value = await redis.get(`logs:${group}`);
-        if (value) {
-          const keys = JSON.parse(value) as string[];
-          path = keys.find((key) => key.includes(path)) ?? path;
-        }
-        return logsS3.file(path).presign();
+        if (!value) throw status(404, "logs not found");
+        const keys = JSON.parse(value) as string[];
+        const key = keys[index - 1];
+        if (!key) throw status(404, `log ${index} not found`);
+        return logsS3.file(key).presign();
       }
       // [ref]
       // memo [msg]
