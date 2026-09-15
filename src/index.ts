@@ -1,5 +1,8 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { xai } from "@ai-sdk/xai";
+import BssOpenApi20171214 from "@alicloud/bssopenapi20171214";
+import Credential from "@alicloud/credentials";
+import { Config } from "@alicloud/openapi-client";
 import { deserializeGameStateLog } from "@gi-tcg/core";
 import getData from "@gi-tcg/data";
 import { request } from "@octokit/request";
@@ -786,6 +789,14 @@ const app = new Elysia()
           `💸 $${total_usage.toFixed(2)}`,
           `🤑 $${(total_credits - total_usage).toFixed(2)}`,
         ].join("\n");
+      }
+      // 💰💰
+      else if (msg === "💰💰") {
+        const config = new Config({ credential: new Credential() });
+        config.endpoint = "business.aliyuncs.com";
+        const client = new BssOpenApi20171214(config);
+        const response = await client.queryAccountBalance();
+        return response.body?.data?.availableAmount;
       }
       // m
       else if (ref && msg === "m") {
