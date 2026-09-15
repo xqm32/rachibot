@@ -6,6 +6,7 @@ import { Config } from "@alicloud/openapi-client";
 import { deserializeGameStateLog } from "@gi-tcg/core";
 import getData from "@gi-tcg/data";
 import { request } from "@octokit/request";
+import { OpenCode } from "@opencode/client";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Monty, runMontyAsync } from "@pydantic/monty";
 import {
@@ -18,7 +19,7 @@ import {
   ToolLoopAgent,
   UserContent,
 } from "ai";
-import { $, randomUUIDv7, redis, s3, S3Client, sleep, stripANSI, YAML } from "bun";
+import { randomUUIDv7, redis, s3, S3Client, sleep, stripANSI, YAML } from "bun";
 import { load } from "cheerio";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -1290,16 +1291,35 @@ const app = new Elysia()
         } else if (name.startsWith("opencode/")) {
           const agent = name.slice("opencode/".length);
           if (!["piovium"].includes(agent)) throw status(403, "agent not allowed");
-          const attach = process.env.OPENCODE_URL;
-          const password = process.env.OPENCODE_SERVER_PASSWORD;
+
+          const baseUrl = process.env.OPENCODE_URL!;
+          const authorization = `Basic ${Buffer.from(`opencode:${process.env.OPENCODE_SERVER_PASSWORD}`).toString("base64")}`;
+          const opencode = OpenCode.make({ baseUrl, headers: { authorization } });
+          const session = await opencode.session.create({ agent });
+          const sessionID = session.id;
+
           if (ref) msg = `${ref}\n---\n${msg}`;
-          const { stdout, stderr } =
-            await $`opencode run --agent ${agent} --attach ${attach} ${msg}`
-              .quiet()
-              .nothrow()
-              .env({ OPENCODE_SERVER_PASSWORD: password });
-          const [, line] = stripANSI(stderr.toString()).split("\n", 2);
-          const text = [line, stripANSI(stdout.toString())].join("\n\n");
+          await opencode.session.prompt({ sessionID, text: msg });
+          await opencode.session.wait({ sessionID });
+
+          const {
+            data: [last],
+          } = await opencode.message.list({
+            sessionID,
+            type: "assistant",
+            order: "desc",
+            limit: 1,
+          });
+          if (!last) throw status(404, "no assistant message found");
+          else if (last.type !== "assistant")
+            throw status(500, "last message is not from assistant");
+          else if (last.error) throw status(500, last.error.message);
+
+          const text = last.content
+            .filter((part) => part.type === "text")
+            .map((part) => part.text)
+            .join("\n\n");
+
           return {
             text,
             files: [],
