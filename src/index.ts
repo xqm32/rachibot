@@ -790,8 +790,8 @@ const app = new Elysia()
           `🤑 $${(total_credits - total_usage).toFixed(2)}`,
         ].join("\n");
       }
-      // 💰💰
-      else if (msg === "💰💰") {
+      // 💰💰 | ly
+      else if (msg === "💰💰" || msg === "ly") {
         const config = new Config({ credential: new Credential() });
         config.endpoint = "business.aliyuncs.com";
         const client = new BssOpenApi20171214(config);
