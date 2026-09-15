@@ -15,6 +15,7 @@
     "@gi-tcg/core": "^0.20.7",
     "@gi-tcg/data": "^0.20.7",
     "@octokit/request": "^10.0.14",
+    "@opencode/client": "^2.0.3",
     "@openrouter/ai-sdk-provider": "^3.0.0",
     "@pydantic/monty": "0.0.18",
     "ai": "^7.0.73",
