@@ -9,6 +9,9 @@
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.45",
     "@ai-sdk/xai": "^4.0.42",
+    "@alicloud/bssopenapi20171214": "^4.1.1",
+    "@alicloud/credentials": "^2.4.7",
+    "@alicloud/openapi-client": "^0.4.15",
     "@gi-tcg/core": "^0.20.7",
     "@gi-tcg/data": "^0.20.7",
     "@octokit/request": "^10.0.14",
