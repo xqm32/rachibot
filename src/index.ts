@@ -521,7 +521,15 @@ const app = new Elysia()
           entries.map(async ([name, url]) =>
             fetch(url)
               .then((response) => response.json())
-              .then((data) => [name, data])
+              .then(async (data) => {
+                const hostname = URL.parse(url)?.hostname;
+                if (hostname === "lianyu-s1.7shengzhaohuan.online") {
+                  const response = await fetch(`https://${hostname}//api/registration/settings`);
+                  const { registeredCount, limit } = await response.json();
+                  return [`${name} (${registeredCount}/${limit})`, data];
+                }
+                return [name, data];
+              })
               .catch((error) => [`${name} (${error})`, []]),
           ),
         );
