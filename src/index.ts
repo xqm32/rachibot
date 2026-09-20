@@ -1297,13 +1297,17 @@ const app = new Elysia()
             response: { modelId, messages: [] },
           };
         } else if (name.startsWith("opencode/")) {
-          const agent = name.slice("opencode/".length);
-          if (!["piovium"].includes(agent)) throw status(403, "agent not allowed");
+          // /opencode/<provider>/<model>[/variant]
+          const [providerID, id, variant] = name.slice("opencode/".length).split("/");
+          if (!id) throw status(400, "no model specified");
 
           const baseUrl = process.env.OPENCODE_URL!;
           const authorization = `Basic ${Buffer.from(`opencode:${process.env.OPENCODE_SERVER_PASSWORD}`).toString("base64")}`;
           const opencode = OpenCode.make({ baseUrl, headers: { authorization } });
-          const session = await opencode.session.create({ agent });
+          const session = await opencode.session.create({
+            agent: "piovium",
+            model: { providerID, id, variant },
+          });
           const sessionID = session.id;
 
           if (ref) msg = `${ref}\n---\n${msg}`;
