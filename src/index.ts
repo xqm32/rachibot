@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { xai } from "@ai-sdk/xai";
+import { createXai, xai } from "@ai-sdk/xai";
 import BssOpenApi20171214 from "@alicloud/bssopenapi20171214";
 import Credential from "@alicloud/credentials";
 import { Config } from "@alicloud/openapi-client";
@@ -50,6 +50,11 @@ const sub2api = createOpenAICompatible({
   apiKey: process.env.SUB2API_API_KEY!,
   baseURL: process.env.SUB2API_BASE_URL!,
   includeUsage: true,
+});
+
+const sub3api = createXai({
+  apiKey: process.env.SUB3API_API_KEY!,
+  baseURL: process.env.SUB3API_BASE_URL!,
 });
 
 export const bot = new Bot(process.env.BOT_TOKEN!);
@@ -1373,6 +1378,17 @@ const app = new Elysia()
           return await generateText({
             model: sub2api(name.slice("sub2api/".length)),
             messages: context.concat(messages),
+            allowSystemInMessages: true,
+          });
+        } else if (name.startsWith("sub3api/")) {
+          return await generateText({
+            model: sub3api(name.slice("sub3api/".length)),
+            messages: context.concat(messages),
+            tools: {
+              web_search: xai.tools.webSearch(),
+              x_search: xai.tools.xSearch(),
+              code_execution: xai.tools.codeExecution(),
+            },
             allowSystemInMessages: true,
           });
         }
