@@ -1411,7 +1411,7 @@ const app = new Elysia()
           });
 
           return {
-            text: YAML.stringify(decision.answers),
+            text: YAML.stringify(decision.answers, null, 2),
             files: [],
             usage: decision.usage,
             response: { modelId: decision.model, messages: [] },
