@@ -15,6 +15,7 @@
         "@octokit/request": "^10.0.16",
         "@opencode/client": "^2.0.11",
         "@openrouter/ai-sdk-provider": "^3.1.0",
+        "@openrouter/sdk": "^1.4.25",
         "@pydantic/monty": "0.0.18",
         "ai": "^7.0.107",
         "cheerio": "^1.2.0",
@@ -126,6 +127,8 @@
     "@opencode/schema": ["@opencode/schema@2.0.11", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "effect": "4.0.0-rc.112" } }, "sha512-AlJB2iyXDMuzxlEm2ies6vp1IIjhQxBpT6hJdWvqcuxKwFQMbbmvCpKFZU/j8iN1RW8qkaD0v9h7LwnalVqZGg=="],
 
     "@openrouter/ai-sdk-provider": ["@openrouter/ai-sdk-provider@3.1.0", "", { "peerDependencies": { "ai": "^7.0.0", "zod": "^3.25.76 || ^4.1.8" } }, "sha512-BQy1TA9fKrh47s9ivsO6FY5QimN7GUF0i8Qon3pkxQclEgShso0dClpcWn8OIyPLEZZPFaFKgI8TW4S/O0p0Dw=="],
+
+    "@openrouter/sdk": ["@openrouter/sdk@1.4.25", "", { "dependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-H218lYMy9WhU5cMigUvW/k+e1BimCqTTP+9PqssdDXnQ0gFCeEME0HTsFGPbR6UgJgyYh2hTct43/9pMcBem5A=="],
 
     "@pydantic/monty": ["@pydantic/monty@0.0.18", "", { "optionalDependencies": { "@pydantic/monty-darwin-arm64": "0.0.18", "@pydantic/monty-darwin-x64": "0.0.18", "@pydantic/monty-linux-arm64-gnu": "0.0.18", "@pydantic/monty-linux-x64-gnu": "0.0.18", "@pydantic/monty-wasm32-wasi": "0.0.18", "@pydantic/monty-win32-x64-msvc": "0.0.18" } }, "sha512-4tCURCLkmpYm5nfZ0TFkBTIV1KWx62ns7Io7JihFAXPtFCYyMd4Q94t5PulEIbJeJ7EKwNsLZOX9ilb0By2LKw=="],
 
