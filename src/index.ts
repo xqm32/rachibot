@@ -8,6 +8,8 @@ import getData from "@gi-tcg/data";
 import { request } from "@octokit/request";
 import { OpenCode } from "@opencode/client";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { OpenRouter } from "@openrouter/sdk";
+import { Questions } from "@openrouter/sdk/models";
 import { Monty, runMontyAsync } from "@pydantic/monty";
 import {
   FilePart,
@@ -42,6 +44,10 @@ const logsS3 = new S3Client({
 });
 
 const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY!,
+});
+
+const closerouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
 });
 
@@ -1391,6 +1397,25 @@ const app = new Elysia()
             },
             allowSystemInMessages: true,
           });
+        } else if (name.startsWith("jev/")) {
+          const [message] = messages;
+          if (!message || message.role !== "system") throw status(400, "no system message");
+
+          const decision = await closerouter.alpha.decisions.create({
+            decisionsRequest: {
+              model: name.slice("jev/".length),
+              state: ref ?? msg,
+              questions: YAML.parse(message.content) as Record<string, Questions>,
+              user: qq,
+            },
+          });
+
+          return {
+            text: YAML.stringify(decision.answers),
+            files: [],
+            usage: decision.usage,
+            response: { modelId: decision.model, messages: [] },
+          };
         }
         return await generateText({
           model: openrouter(name),
