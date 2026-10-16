@@ -1077,8 +1077,9 @@ const app = new Elysia()
       const links: Set<string> = new Set();
       ref?.match(regex)?.forEach((link) => links.add(link));
       msg.match(regex)?.forEach((link) => links.add(link));
-      if (tags.has("nolinks")) tags.delete("nolinks");
-      else if (links.size > 0) {
+      if (tags.has("links") && links.size > 0) {
+        tags.delete("links");
+
         // #raw
         if (tags.has("raw")) return Array.from(links).join("\n");
 
