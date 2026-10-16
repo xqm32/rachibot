@@ -17,7 +17,6 @@ import {
   generateText,
   ModelMessage,
   TextPart,
-  tool,
   ToolLoopAgent,
   UserContent,
 } from "ai";
@@ -29,7 +28,6 @@ import utc from "dayjs/plugin/utc";
 import { Elysia, status, t } from "elysia";
 import { Bot, InputFile, webhookCallback } from "grammy";
 import net from "net";
-import z from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -1352,32 +1350,16 @@ const app = new Elysia()
         } else if (name.startsWith("agent/")) {
           const agent = new ToolLoopAgent({
             model: openrouter(name.slice("agent/".length)),
-            tools: {
-              fetch_text: tool({
-                inputSchema: z.object({ link: z.url() }),
-                execute: async ({ link }) => {
-                  const url = URL.parse(link);
-                  if (!url || !["http:", "https:"].includes(url.protocol))
-                    throw new Error("invalid url");
-                  const response = await fetch(url);
-                  const text = await response.text();
-                  return text;
-                },
-              }),
-              run_sandboxed_python: tool({
-                inputSchema: z.object({ code: z.string() }),
-                execute: ({ code }) =>
-                  runMontyAsync(new Monty(code), {
-                    limits: {
-                      maxAllocations: 10000,
-                      maxDurationSecs: 5,
-                      maxMemory: 64 * 1024 * 1024,
-                      maxRecursionDepth: 100,
-                    },
-                  }),
-              }),
+            providerOptions: {
+              openrouter: {
+                tools: [
+                  { type: "openrouter:web_search" },
+                  { type: "openrouter:web_fetch" },
+                  { type: "openrouter:datetime" },
+                ],
+                user: qq,
+              },
             },
-            providerOptions: { openrouter: { user: qq } },
           });
           return await agent.generate({ messages: context.concat(messages) });
         } else if (name.startsWith("sub2api/")) {
