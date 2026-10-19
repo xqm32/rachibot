@@ -1364,6 +1364,7 @@ const app = new Elysia()
                 ...(variant && { reasoning: { effort: variant } }),
               },
             },
+            allowSystemInMessages: true,
           });
           return await agent.generate({ messages: context.concat(messages) });
         } else if (name.startsWith("sub2api/")) {
