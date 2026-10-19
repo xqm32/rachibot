@@ -1404,10 +1404,17 @@ const app = new Elysia()
             response: { modelId: decision.model, messages: [] },
           };
         }
+        const [model, provider, variant] = name.split(/[@$]/);
         return await generateText({
-          model: openrouter(name),
+          model: openrouter(model),
           messages: context.concat(messages),
-          providerOptions: { openrouter: { user: qq } },
+          providerOptions: {
+            openrouter: {
+              user: qq,
+              ...(provider && { provider: { only: [provider] } }),
+              ...(variant && { reasoning: { effort: variant } }),
+            },
+          },
           allowSystemInMessages: true,
         });
       };
