@@ -1349,8 +1349,9 @@ const app = new Elysia()
             response: { modelId: name, messages: [] },
           };
         } else if (name.startsWith("agent/")) {
+          const [model, provider, variant] = name.slice("agent/".length).split(/[@$]/);
           const agent = new ToolLoopAgent({
-            model: openrouter(name.slice("agent/".length)),
+            model: openrouter(model),
             providerOptions: {
               openrouter: {
                 tools: [
@@ -1359,6 +1360,8 @@ const app = new Elysia()
                   { type: "openrouter:datetime" },
                 ],
                 user: qq,
+                ...(provider && { provider: { only: [provider] } }),
+                ...(variant && { reasoning: { effort: variant } }),
               },
             },
           });
