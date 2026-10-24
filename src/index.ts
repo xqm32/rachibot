@@ -151,7 +151,7 @@ bot.hears(/\/x\s*(.*)/s, async (ctx) => {
 });
 
 const app = new Elysia()
-  .error(({ error }) => (error as any).message)
+  .onError(({ error }) => (error as any).message)
   .get("/", () => "Hello Elysia")
   .post(
     "/",
