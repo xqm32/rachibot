@@ -7,27 +7,27 @@
     "bot": "bun run --watch src/bot.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^3.0.53",
-    "@ai-sdk/xai": "^5.0.4",
+    "@ai-sdk/openai-compatible": "^3.0.78",
+    "@ai-sdk/xai": "^5.0.30",
     "@alicloud/bssopenapi20171214": "^4.1.1",
     "@alicloud/credentials": "^2.4.7",
     "@alicloud/openapi-client": "^0.4.15",
-    "@gi-tcg/core": "^0.20.7",
-    "@gi-tcg/data": "^0.20.7",
+    "@gi-tcg/core": "^0.21.0",
+    "@gi-tcg/data": "^0.21.0",
     "@octokit/request": "^10.0.16",
-    "@opencode/client": "^2.0.11",
+    "@opencode/client": "^2.1.4",
     "@openrouter/ai-sdk-provider": "^3.1.0",
-    "@openrouter/sdk": "^1.4.25",
+    "@openrouter/sdk": "^1.5.7",
     "@pydantic/monty": "0.0.18",
-    "ai": "^7.0.107",
+    "ai": "^7.0.153",
     "cheerio": "^1.2.0",
     "dayjs": "^1.11.23",
-    "elysia": "^2.0.0-beta.29",
+    "elysia": "^2.0.0-rc.0",
     "grammy": "^1.46.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "bun-types": "1.4.2"
+    "bun-types": "1.4.4"
   },
   "module": "src/index.js",
   "main": "src/index.ts"
