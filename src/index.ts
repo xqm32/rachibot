@@ -3,14 +3,11 @@ import { createXai, xai } from "@ai-sdk/xai";
 import BssOpenApi20171214 from "@alicloud/bssopenapi20171214";
 import Credential from "@alicloud/credentials";
 import { Config } from "@alicloud/openapi-client";
-import { deserializeGameStateLog } from "@gi-tcg/core";
-import getData from "@gi-tcg/data";
 import { request } from "@octokit/request";
 import { OpenCode } from "@opencode/client";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { OpenRouter } from "@openrouter/sdk";
 import { Questions } from "@openrouter/sdk/models";
-import { Monty, runMontyAsync } from "@pydantic/monty";
 import {
   FilePart,
   generateImage,
@@ -449,35 +446,6 @@ const app = new Elysia()
         }
         return stdout.map((e) => e.text).join("\n");
       }
-      // /py
-      else if (name === "py")
-        return await runMontyAsync(new Monty(msg, { inputs: ["_"] }), {
-          limits: {
-            maxAllocations: 10000,
-            maxDurationSecs: 5,
-            maxMemory: 64 * 1024 * 1024,
-            maxRecursionDepth: 100,
-          },
-          inputs: { _: ref },
-          externalFunctions: {
-            async ft(arg) {
-              const url = URL.parse(arg as string);
-              if (!url || !["http:", "https:"].includes(url.protocol))
-                throw new Error("invalid url");
-              const response = await fetch(url);
-              const text = await response.text();
-              return text;
-            },
-            async dgsl(arg) {
-              const url = URL.parse(arg as string);
-              if (!url || !["http:", "https:"].includes(url.protocol))
-                throw new Error("invalid url");
-              const response = await fetch(url);
-              const log = await response.json();
-              return JSON.stringify(deserializeGameStateLog(getData(log.gv), log));
-            },
-          },
-        });
 
       // #
       if (tags.has("")) {
