@@ -370,7 +370,7 @@ const app = new Elysia()
           if (!match) throw status(400, "invalid memo command");
           [, content] = match;
         }
-        const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/v1/memos`, {
+        const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/memos`, {
           method: "POST",
           headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
           body: JSON.stringify({
@@ -794,7 +794,7 @@ const app = new Elysia()
           !link.pathname.startsWith("/memos/")
         )
           throw status(400, "invalid m command");
-        link.pathname = `/api/v1${link.pathname}`;
+        link.pathname = `/api${link.pathname}`;
 
         let content;
 
@@ -1072,7 +1072,7 @@ const app = new Elysia()
                 link.hostname === new URL(process.env.MEMOS_URL!).hostname &&
                 link.pathname.startsWith("/memos/")
               ) {
-                link.pathname = `/api/v1${link.pathname}`;
+                link.pathname = `/api${link.pathname}`;
                 const response = await fetch(link, {
                   headers: {
                     Authorization: `Bearer ${process.env.MEMOS_TOKEN}`,
@@ -1198,7 +1198,7 @@ const app = new Elysia()
 
       if (messages.length === 0) return chain.map((v) => `/${v}`).join(" -> ");
 
-      const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/v1/memos`, {
+      const memoResponse = await fetch(`${process.env.MEMOS_URL!}/api/memos`, {
         method: "POST",
         headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
         body: JSON.stringify({
@@ -1415,11 +1415,14 @@ const app = new Elysia()
           return images.join("\n");
         }
 
-        await fetch(`${process.env.MEMOS_URL!}/api/v1/${memo.name}`, {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
-          body: JSON.stringify({ content: text }),
-        });
+        await fetch(
+          `${process.env.MEMOS_URL!}/api/${memo.name}?updateMask=content`,
+          {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+            body: JSON.stringify({ content: text }),
+          },
+        );
 
         if (tags.has("memo"))
           return [`📝 ${process.env.MEMOS_URL!}/${memo.name}`, text].join("\n\n");
@@ -1477,7 +1480,7 @@ const app = new Elysia()
           });
           const response = await app.handle(request);
           const text = await response.text();
-          await fetch(`${process.env.MEMOS_URL!}/api/v1/${name}/comments`, {
+          await fetch(`${process.env.MEMOS_URL!}/api/${name}/comments`, {
             method: "POST",
             headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
             body: JSON.stringify({
@@ -1487,6 +1490,7 @@ const app = new Elysia()
             }),
           });
         })();
+      return { code: 0 };
     },
   );
 
