@@ -1415,14 +1415,11 @@ const app = new Elysia()
           return images.join("\n");
         }
 
-        await fetch(
-          `${process.env.MEMOS_URL!}/api/${memo.name}?updateMask=content`,
-          {
-            method: "PATCH",
-            headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
-            body: JSON.stringify({ content: text }),
-          },
-        );
+        await fetch(`${process.env.MEMOS_URL!}/api/${memo.name}?updateMask=content`, {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${process.env.MEMOS_TOKEN}` },
+          body: JSON.stringify({ content: text }),
+        });
 
         if (tags.has("memo"))
           return [`📝 ${process.env.MEMOS_URL!}/${memo.name}`, text].join("\n\n");
