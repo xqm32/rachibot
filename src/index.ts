@@ -1428,7 +1428,7 @@ const app = new Elysia()
       };
 
       const text = await Promise.race([
-        respond(),
+        respond().catch(console.error),
         sleep(90000).then(() => `${process.env.MEMOS_URL!}/${memo.name}`),
       ]);
 
